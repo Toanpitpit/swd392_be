@@ -1,39 +1,39 @@
 package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
+import fa.training.car_rental_management.dto.request.BookingRequestDTO;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
-import fa.training.car_rental_management.services.BookingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 @CrossOrigin(origins = "*")
 public class BookingController {
 
     @Autowired
     private BookingService bookingService;
-
     /**
      * Create a new booking
-     * POST /api/bookings
+     * POST /bookings
+     * Requires: CUSTOMER role
      */
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     @PostMapping
-    public ResponseEntity<ApiResponse<Booking>> createBooking(@RequestBody Booking booking) {
+    public ResponseEntity<ApiResponse<Booking>> createBooking(@RequestBody BookingRequestDTO booking) {
         try {
             log.info("Creating new booking for vehicle: {} by customer: {}", 
                     booking.getVehicleId(), booking.getCustomerId());
-            
+
             Booking createdBooking = bookingService.createBooking(booking);
             
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -181,8 +181,10 @@ public class BookingController {
 
     /**
      * Update booking status
-     * PATCH /api/bookings/{id}/status
+     * PATCH /bookings/{id}/status
+     * Requires: CAR_OWNER or ADMIN role
      */
+    @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<Booking>> updateBookingStatus(
             @PathVariable Integer id,
@@ -212,8 +214,10 @@ public class BookingController {
 
     /**
      * Reject booking with reason
-     * PATCH /api/bookings/{id}/reject
+     * PATCH /bookings/{id}/reject
+     * Requires: CAR_OWNER or ADMIN role
      */
+    @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<Booking>> rejectBooking(
             @PathVariable Integer id,
@@ -244,8 +248,10 @@ public class BookingController {
 
     /**
      * Approve booking
-     * PATCH /api/bookings/{id}/approve
+     * PATCH /bookings/{id}/approve
+     * Requires: CAR_OWNER or ADMIN role
      */
+    @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<Booking>> approveBooking(@PathVariable Integer id) {
         try {
