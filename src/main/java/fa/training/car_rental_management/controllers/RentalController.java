@@ -51,86 +51,86 @@ public class RentalController {
      * 4. Create pickup inspection
      * 5. Activate booking (ACTIVE)
      */
-    @PostMapping("/pickup")
-    public ResponseEntity<ApiResponse<BookingPickupResponse>> completeRentalPickup(
-            @RequestBody BookingPickupRequest request) {
-        try {
-            log.info("Starting rental pickup flow for vehicle: {} by customer: {}", 
-                    request.getVehicleId(), request.getCustomerId());
-
-            // Step 1: Create Booking
-            Booking booking = Booking.builder()
-                    .vehicleId(request.getVehicleId())
-                    .customerId(request.getCustomerId())
-                    .startTime(request.getStartTime())
-                    .endTime(request.getEndTime())
-                    .status(BookingStatus.PENDING_APPROVAL)
-                    .build();
-
-            Booking createdBooking = bookingService.createBooking(booking);
-            log.info("Booking created with id: {}", createdBooking.getId());
-
-            // Step 2: Approve Booking
-            createdBooking.setStatus(BookingStatus.APPROVED);
-            Booking approvedBooking = bookingService.updateBooking(createdBooking);
-            log.info("Booking approved");
-
-            // Step 3: Process Payment (Security Deposit)
-            Payment payment = Payment.builder()
-                    .bookingId(approvedBooking.getId())
-                    .payerId(request.getCustomerId())
-                    .amount(request.getSecurityDepositAmount())
-                    .type(PaymentType.SECURITY_DEPOSIT)
-                    .status(PaymentStatus.COMPLETED)
-                    .build();
-
-            Payment createdPayment = paymentService.createPayment(payment);
-            log.info("Security deposit payment created");
-
-            // Step 4: Create Pickup Inspection
-            Inspection inspection = Inspection.builder()
-                    .bookingId(approvedBooking.getId())
-                    .inspectorId(request.getInspectorId())
-                    .type(InspectionType.PICKUP)
-                    .carStatus(request.getCarStatus())
-                    .comments(request.getInspectionComments())
-                    .date(LocalDateTime.now())
-                    .build();
-
-            Inspection pickupInspection = inspectionService.createInspection(inspection);
-            log.info("Pickup inspection created");
-
-            // Step 5: Activate Booking (Mark as ACTIVE)
-            approvedBooking.setStatus(BookingStatus.ACTIVE);
-            Booking activeBooking = bookingService.updateBooking(approvedBooking);
-            log.info("Booking activated - Rental started");
-
-            // Build response
-            BookingPickupResponse response = BookingPickupResponse.builder()
-                    .bookingId(activeBooking.getId())
-                    .bookingStatus(activeBooking.getStatus().toString())
-                    .vehicleId(activeBooking.getVehicleId())
-                    .customerId(activeBooking.getCustomerId())
-                    .startTime(activeBooking.getStartTime())
-                    .endTime(activeBooking.getEndTime())
-                    .paymentId(createdPayment.getId())
-                    .paymentAmount(createdPayment.getAmount())
-                    .paymentStatus(createdPayment.getStatus().toString())
-                    .inspectionId(pickupInspection.getId())
-                    .inspectionType(pickupInspection.getType().toString())
-                    .carStatus(pickupInspection.getCarStatus().toString())
-                    .message("Rental pickup completed successfully")
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Rental pickup process completed", response));
-
-        } catch (Exception e) {
-            log.error("Error completing rental pickup", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to complete rental pickup: " + e.getMessage()));
-        }
-    }
+//    @PostMapping("/pickup")
+//    public ResponseEntity<ApiResponse<BookingPickupResponse>> completeRentalPickup(
+//            @RequestBody BookingPickupRequest request) {
+//        try {
+//            log.info("Starting rental pickup flow for vehicle: {} by customer: {}",
+//                    request.getVehicleId(), request.getCustomerId());
+//
+//            // Step 1: Create Booking
+//            Booking booking = Booking.builder()
+//                    .vehicleId(request.getVehicleId())
+//                    .customerId(request.getCustomerId())
+//                    .startTime(request.getStartTime())
+//                    .endTime(request.getEndTime())
+//                    .status(BookingStatus.PENDING_APPROVAL)
+//                    .build();
+//
+//            Booking createdBooking = bookingService.createBooking(booking);
+//            log.info("Booking created with id: {}", createdBooking.getId());
+//
+//            // Step 2: Approve Booking
+//            createdBooking.setStatus(BookingStatus.APPROVED);
+//            Booking approvedBooking = bookingService.updateBooking(createdBooking);
+//            log.info("Booking approved");
+//
+//            // Step 3: Process Payment (Security Deposit)
+//            Payment payment = Payment.builder()
+//                    .bookingId(approvedBooking.getId())
+//                    .payerId(request.getCustomerId())
+//                    .amount(request.getSecurityDepositAmount())
+//                    .type(PaymentType.SECURITY_DEPOSIT)
+//                    .status(PaymentStatus.COMPLETED)
+//                    .build();
+//
+//            Payment createdPayment = paymentService.createPayment(payment);
+//            log.info("Security deposit payment created");
+//
+//            // Step 4: Create Pickup Inspection
+//            Inspection inspection = Inspection.builder()
+//                    .bookingId(approvedBooking.getId())
+//                    .inspectorId(request.getInspectorId())
+//                    .type(InspectionType.PICKUP)
+//                    .carStatus(request.getCarStatus())
+//                    .comments(request.getInspectionComments())
+//                    .date(LocalDateTime.now())
+//                    .build();
+//
+//            Inspection pickupInspection = inspectionService.createInspection(inspection);
+//            log.info("Pickup inspection created");
+//
+//            // Step 5: Activate Booking (Mark as ACTIVE)
+//            approvedBooking.setStatus(BookingStatus.ACTIVE);
+//            Booking activeBooking = bookingService.updateBooking(approvedBooking);
+//            log.info("Booking activated - Rental started");
+//
+//            // Build response
+//            BookingPickupResponse response = BookingPickupResponse.builder()
+//                    .bookingId(activeBooking.getId())
+//                    .bookingStatus(activeBooking.getStatus().toString())
+//                    .vehicleId(activeBooking.getVehicleId())
+//                    .customerId(activeBooking.getCustomerId())
+//                    .startTime(activeBooking.getStartTime())
+//                    .endTime(activeBooking.getEndTime())
+//                    .paymentId(createdPayment.getId())
+//                    .paymentAmount(createdPayment.getAmount())
+//                    .paymentStatus(createdPayment.getStatus().toString())
+//                    .inspectionId(pickupInspection.getId())
+//                    .inspectionType(pickupInspection.getType().toString())
+//                    .carStatus(pickupInspection.getCarStatus().toString())
+//                    .message("Rental pickup completed successfully")
+//                    .build();
+//
+//            return ResponseEntity.status(HttpStatus.CREATED)
+//                    .body(ApiResponse.success("Rental pickup process completed", response));
+//
+//        } catch (Exception e) {
+//            log.error("Error completing rental pickup", e);
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(ApiResponse.error("Failed to complete rental pickup: " + e.getMessage()));
+//        }
+//    }
 
     /**
      * Get booking status

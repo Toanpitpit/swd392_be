@@ -30,7 +30,7 @@ public class Booking {
     @Column(name = "customer_id", nullable = false)
     private Integer customerId;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP" )
     private Timestamp createdAt;
 
     @Column(name = "start_time", nullable = false)
