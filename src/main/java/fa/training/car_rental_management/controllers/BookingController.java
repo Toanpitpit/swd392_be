@@ -4,6 +4,7 @@ import fa.training.car_rental_management.dto.ApiResponse;
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
+import fa.training.car_rental_management.services.impl.BookingServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ import java.util.Optional;
 public class BookingController {
 
     @Autowired
-    private BookingService bookingService;
+    private BookingServiceImpl bookingService;
     /**
      * Create a new booking
      * POST /bookings
@@ -129,6 +130,7 @@ public class BookingController {
         }
     }
 
+
     /**
      * Get all bookings
      * GET /api/bookings
@@ -148,6 +150,7 @@ public class BookingController {
                     .body(ApiResponse.error("Error fetching bookings"));
         }
     }
+
 
     /**
      * Update booking status (PENDING_APPROVAL -> AWAITING_PAYMENT -> APPROVED -> ACTIVE)
@@ -245,6 +248,7 @@ public class BookingController {
                     .body(ApiResponse.error("Failed to reject booking: " + e.getMessage()));
         }
     }
+
 
     /**
      * Approve booking

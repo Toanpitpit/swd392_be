@@ -132,6 +132,9 @@ public class UploadServiceImpl implements UploadService {
 
     private String performUpload(MultipartFile file, String bucketName, String folderPath) throws IOException {
         try {
+            log.debug("Starting upload for file: {} to bucket: {} with folder: {}", 
+                    file.getOriginalFilename(), bucketName, folderPath);
+            
             String fileName = generateFileName(file.getOriginalFilename());
             String fileKey = folderPath.isEmpty() ? fileName : folderPath + "/" + fileName;
 
@@ -143,11 +146,26 @@ public class UploadServiceImpl implements UploadService {
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            log.info("File uploaded successfully: {}/{}", bucketName, fileKey);
+            log.info("✓ File uploaded successfully: {}/{}", bucketName, fileKey);
             return fileKey;
+            
+        } catch (software.amazon.awssdk.services.s3.model.S3Exception e) {
+
+            log.error("   AWS S3 Error: {}", e.awsErrorDetails().errorMessage());
+            log.error("   Error Code: {}", e.awsErrorDetails().errorCode());
+            log.error("   HTTP Status Code: {}", e.statusCode());
+            log.error("   Request ID: {}", e.requestId());
+            
+            if (e.statusCode() == 403) {
+                throw new IOException("S3 Access Denied (403): Check AWS credentials and S3 bucket permissions", e);
+            } else if (e.statusCode() == 404) {
+                throw new IOException("S3 Bucket not found (404): Verify bucket name '" + bucketName + "' exists", e);
+            } else {
+                throw new IOException("AWS S3 Error: " + e.awsErrorDetails().errorMessage(), e);
+            }
         } catch (Exception e) {
-            log.error("Error uploading file to S3", e);
-            throw new IOException("Failed to upload file to S3", e);
+            log.error("❌ Error uploading file to S3", e);
+            throw new IOException("Failed to upload file to S3: " + e.getMessage(), e);
         }
     }
 
