@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Booking Request</title>
+    <style>
+        /* Responsive cơ bản */
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding: 20px !important; }
+            .col-stack { display: block !important; width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td align="center" style="padding: 20px 0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e1e4e8;">
+
+                <tr>
+                    <td align="center" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 40px 20px;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">🔔 NEW REQUEST</h1>
+                        <p style="color: #d1d9e6; margin: 10px 0 0 0; font-size: 14px;">FitHub Car Rental Management System</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="mobile-padding" style="padding: 40px 30px;">
+                        <h2 style="color: #2d3436; margin: 0 0 20px 0; font-size: 20px;">Hi <span th:text="${ownerName}" style="color: #0984e3;">Owner</span>,</h2>
+                        <p style="color: #636e72; line-height: 1.6; margin-bottom: 30px;">Bạn có một yêu cầu đặt xe mới cần phê duyệt. Vui lòng kiểm tra thông tin chi tiết dưới đây:</p>
+
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fdfdfd; border: 1px dashed #b2bec3; border-radius: 8px; padding: 20px;">
+                            <tr>
+                                <td>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding-bottom: 10px; font-size: 14px; color: #636e72;">Vehicle:</td>
+                                            <td align="right" style="padding-bottom: 10px; font-size: 15px; font-weight: bold; color: #2d3436;" th:text="${vehicleName}">Toyota Vios</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-bottom: 10px; font-size: 14px; color: #636e72;">Duration:</td>
+                                            <td align="right" style="padding-bottom: 10px; font-size: 15px; font-weight: bold; color: #2d3436;">
+                                                <span th:text="${startTime}">01/01/2026</span> - <span th:text="${endTime}">03/01/2026</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-top: 10px; border-top: 1px solid #eee; font-size: 14px; color: #636e72;">Estimated Amount:</td>
+                                            <td align="right" style="padding-top: 10px; border-top: 1px solid #eee; font-size: 18px; font-weight: bold; color: #d63031;" th:text="${estimatedAmount}">$500.00</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 30px; padding: 15px; background-color: #e1f5fe; border-radius: 8px;">
+                            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #0288d1; text-transform: uppercase;">Customer Information</h3>
+                            <p style="margin: 0; font-size: 14px; color: #455a64;">
+                                <strong>Name:</strong> <span th:text="${customerName}">John Doe</span><br>
+                                <strong>Email:</strong> <span th:text="${customerEmail}">john@example.com</span>
+                            </p>
+                        </div>
+
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 40px;">
+                            <tr>
+                                <td align="center">
+                                    <a th:href="${actionUrl}" style="background-color: #00b894; color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(0, 184, 148, 0.2);">
+                                        View Booking Details
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="background-color: #f1f2f6; padding: 30px; text-align: center;">
+                        <p style="margin: 0; color: #95a5a6; font-size: 12px;">© 2026 FitHub Car Rental. All rights reserved.</p>
+                        <p style="margin: 10px 0 0 0; color: #95a5a6; font-size: 12px;">
+                            <a href="#" style="color: #3498db; text-decoration: none;">Privacy Policy</a> | <a href="#" style="color: #3498db; text-decoration: none;">Support</a>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

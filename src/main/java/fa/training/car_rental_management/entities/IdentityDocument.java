@@ -37,6 +37,6 @@ public class IdentityDocument {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private users user;
+    private Users user;
 }
 

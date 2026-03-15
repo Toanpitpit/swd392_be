@@ -1,10 +1,13 @@
 package fa.training.car_rental_management.util;
 
 import fa.training.car_rental_management.entities.Availability;
-import fa.training.car_rental_management.entities.users;
+import fa.training.car_rental_management.entities.Booking;
+import fa.training.car_rental_management.entities.Users;
 import fa.training.car_rental_management.entities.Vehicle;
 import fa.training.car_rental_management.enums.AvailabilityType;
+import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.repository.AvailabilityRepository;
+import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.UserRepository;
 import fa.training.car_rental_management.repository.VehicleRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,9 @@ public class BookingValidator {
     @Autowired
     private AvailabilityRepository availabilityRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
     /**
      * Validate vehicle exists in database
      * 
@@ -56,8 +62,8 @@ public class BookingValidator {
      * @return users object if found
      * @throws RuntimeException if customer not found
      */
-    public users validateCustomerExists(Integer customerId) {
-        Optional<users> customerOpt = userRepository.findById(customerId);
+    public Users validateCustomerExists(Integer customerId) {
+        Optional<Users> customerOpt = userRepository.findById(customerId);
         if (!customerOpt.isPresent()) {
             throw new RuntimeException("Customer not found with ID: " + customerId);
         }
@@ -92,7 +98,7 @@ public class BookingValidator {
 
     /**
      * Check availability and update/create availability records
-     * If vehicle not available (BLOCKED/SOFT_BLOCKED) -> throw exception
+     * If vehicle not available (BLOCKED/SOFT_BLOCKED/BOOKED) -> throw exception
      * If no availability found -> create new
      * If found available -> update
      * 
@@ -104,20 +110,23 @@ public class BookingValidator {
     public void checkAndUpdateAvailability(Integer vehicleId, LocalDateTime startTime, LocalDateTime endTime) {
         List<Availability> availabilities = availabilityRepository.findByVehicleId(vehicleId);
 
+        boolean hasConflict = false;
         boolean isAvailable = false;
         Availability availabilityToUpdate = null;
 
-        // Check existing availabilities
+        // Check existing availabilities for conflicts
         for (Availability availability : availabilities) {
             // Check if booking period overlaps with availability period
             boolean periodOverlaps = !endTime.isBefore(availability.getStartDate()) &&
                     !startTime.isAfter(availability.getEndDate());
 
             if (periodOverlaps) {
-                // Check if availability status allows booking
+                // Check availability type - reject if BLOCKED, SOFT_BLOCKED, or BOOKED
                 if (availability.getType() == AvailabilityType.BLOCKED || 
-                    availability.getType() == AvailabilityType.SOFT_BLOCKED) {
-                    throw new RuntimeException("Vehicle not available for the requested time period");
+                    availability.getType() == AvailabilityType.SOFT_BLOCKED ||
+                    availability.getType() == AvailabilityType.BOOKED) {
+                    hasConflict = true;
+                    break;
                 }
 
                 if (availability.getType() == AvailabilityType.AVAILABLE) {
@@ -128,13 +137,24 @@ public class BookingValidator {
             }
         }
 
-        // Create new availability if none found
-        if (!isAvailable && availabilityToUpdate == null) {
-            createNewAvailability(vehicleId, startTime, endTime);
-        } 
-        // Update existing availability
-        else if (availabilityToUpdate != null) {
+        if (hasConflict) {
+            throw new RuntimeException("Vehicle not available for the requested time period - conflicting booking or block exists");
+        }
+
+        // If available slot found, update it
+        if (isAvailable && availabilityToUpdate != null) {
             updateExistingAvailability(availabilityToUpdate, startTime, endTime);
+        }
+        // If no availability records exist, create new one
+        else if (availabilities.isEmpty()) {
+            createNewAvailability(vehicleId, startTime, endTime);
+        }
+        // If no overlapping period found in existing records, check if it means conflict
+        else if (!isAvailable && !hasConflict) {
+            // This means there are availabilities but none overlap with requested time
+            // This is ALLOWED - just don't update anything
+            log.debug("No availability record for requested period - will create new one");
+            createNewAvailability(vehicleId, startTime, endTime);
         }
 
         log.debug("Availability checked and processed for vehicle: {}", vehicleId);
@@ -207,7 +227,60 @@ public class BookingValidator {
     }
 
     /**
-     * Get availability status for vehicle in given period
+     * Check if there are any existing bookings that conflict with requested time
+     * 
+     * @param vehicleId the vehicle ID
+     * @param startTime booking start time
+     * @param endTime booking end time
+     * @throws RuntimeException if conflict found
+     */
+    public void checkBookingConflicts(Integer vehicleId, LocalDateTime startTime, LocalDateTime endTime) {
+        List<Booking> existingBookings = bookingRepository.findByVehicleId(vehicleId);
+        
+        for (Booking booking : existingBookings) {
+            // Skip cancelled/rejected bookings
+            if (booking.getStatus() == BookingStatus.CANCELLED || 
+                booking.getStatus() == BookingStatus.REJECTED) {
+                continue;
+            }
+            
+            // Check for time overlap
+            boolean timeOverlaps = !endTime.isBefore(booking.getStartTime()) &&
+                    !startTime.isAfter(booking.getEndTime());
+            
+            if (timeOverlaps) {
+                throw new RuntimeException(
+                    "Vehicle already booked for the requested time period. " +
+                    "Existing booking: " + booking.getStartTime() + " to " + booking.getEndTime()
+                );
+            }
+        }
+        
+        log.debug("No booking conflicts found for vehicle: {} in requested period", vehicleId);
+    }
+
+    /**
+     * Create Availability record marking the time period as BOOKED
+     * This prevents other bookings from overlapping with this period
+     * 
+     * @param vehicleId the vehicle ID
+     * @param startTime booking start time
+     * @param endTime booking end time
+     */
+    public void createAvailabilityForBooking(Integer vehicleId, LocalDateTime startTime, LocalDateTime endTime) {
+        Availability bookedAvailability = new Availability();
+        bookedAvailability.setVehicleId(vehicleId);
+        bookedAvailability.setStartDate(startTime);
+        bookedAvailability.setEndDate(endTime);
+        bookedAvailability.setType(AvailabilityType.BOOKED);
+        
+        availabilityRepository.save(bookedAvailability);
+        log.info("Created BOOKED availability record for vehicle: {} (Period: {} to {})", 
+                 vehicleId, startTime, endTime);
+    }
+
+    /**
+     * Get all active bookings for vehicle
      * 
      * @param vehicleId the vehicle ID
      * @param startTime start time

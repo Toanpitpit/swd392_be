@@ -1,16 +1,16 @@
 package fa.training.car_rental_management.services;
 
-import fa.training.car_rental_management.entities.users;
+import fa.training.car_rental_management.entities.Users;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    users createUser(users user);
-    Optional<users> getUserById(Integer id);
-    Optional<users> getUserByEmail(String email);
-    List<users> getAllUsers();
-    users updateUser(users user);
+    Users createUser(Users user);
+    Optional<Users> getUserById(Integer id);
+    Optional<Users> getUserByEmail(String email);
+    List<Users> getAllUsers();
+    Users updateUser(Users user);
     void deleteUser(Integer id);
     void deleteAllUsers();
 }

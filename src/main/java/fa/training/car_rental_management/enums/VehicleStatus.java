@@ -5,6 +5,7 @@ public enum VehicleStatus {
     PENDING_VERIFICATION,
     ACTIVE,
     REJECTED,
+    BOOKED,
     MAINTENANCE,
     HIDDEN
 }

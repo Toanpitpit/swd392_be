@@ -29,8 +29,8 @@ public class Payment {
     @Column(name = "payer_id", nullable = false)
     private Integer payerId;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "amount", nullable = false)
+    private Double amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 50)
@@ -46,6 +46,6 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payer_id", insertable = false, updatable = false)
-    private users payer;
+    private Users payer;
 }
 
