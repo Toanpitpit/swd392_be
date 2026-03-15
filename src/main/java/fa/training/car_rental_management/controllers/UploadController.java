@@ -1,6 +1,7 @@
 package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
+import fa.training.car_rental_management.dto.UploadResponse;
 import fa.training.car_rental_management.services.UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Upload Controller
- * Handles file and video uploads to AWS S3
- */
 @Slf4j
 @RestController
 @RequestMapping("/uploads")
@@ -30,26 +26,16 @@ public class UploadController {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    /**
-     * Upload a single file
-     * POST /api/uploads/file
-     */
     @PostMapping("/file")
-    public ResponseEntity<ApiResponse<Map<String, String>>> uploadFile(
+    public ResponseEntity<ApiResponse<UploadResponse>> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folderPath", defaultValue = "files") String folderPath) {
         try {
-            log.info("Uploading file: {}", file.getOriginalFilename());
-            String fileUrl = uploadService.uploadFile(file, bucketName, folderPath);
-
-            Map<String, String> data = new HashMap<>();
-            data.put("fileUrl", fileUrl);
-            data.put("fileName", file.getOriginalFilename());
-            data.put("fileSize", String.valueOf(file.getSize()));
-
-            return ResponseEntity.ok(ApiResponse.success("File uploaded successfully", data));
+            log.info("Upload file: {}", file.getOriginalFilename());
+            UploadResponse response = uploadService.uploadFile(file, bucketName, folderPath);
+            return ResponseEntity.ok(ApiResponse.success("File uploaded successfully", response));
         } catch (IllegalArgumentException e) {
-            log.error("Validation error: {}", e.getMessage());
+            log.warn("Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Validation error: " + e.getMessage()));
         } catch (IOException e) {
@@ -59,25 +45,16 @@ public class UploadController {
         }
     }
 
-    /**
-     * Upload multiple files
-     * POST /api/uploads/files
-     */
     @PostMapping("/files")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMultipleFiles(
+    public ResponseEntity<ApiResponse<List<UploadResponse>>> uploadMultipleFiles(
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam(value = "folderPath", defaultValue = "files") String folderPath) {
         try {
-            log.info("Uploading {} files", files.size());
-            List<String> fileUrls = uploadService.uploadMultipleFiles(files, bucketName, folderPath);
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("fileUrls", fileUrls);
-            data.put("totalFiles", files.size());
-
-            return ResponseEntity.ok(ApiResponse.success("Files uploaded successfully", data));
+            log.info("Upload {} files", files.size());
+            List<UploadResponse> responses = uploadService.uploadMultipleFiles(files, bucketName, folderPath);
+            return ResponseEntity.ok(ApiResponse.success("Files uploaded successfully", responses));
         } catch (IllegalArgumentException e) {
-            log.error("Validation error: {}", e.getMessage());
+            log.warn("Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Validation error: " + e.getMessage()));
         } catch (IOException e) {
@@ -87,26 +64,16 @@ public class UploadController {
         }
     }
 
-    /**
-     * Upload a single video
-     * POST /api/uploads/video
-     */
     @PostMapping("/video")
-    public ResponseEntity<ApiResponse<Map<String, String>>> uploadVideo(
+    public ResponseEntity<ApiResponse<UploadResponse>> uploadVideo(
             @RequestParam("video") MultipartFile videoFile,
             @RequestParam(value = "folderPath", defaultValue = "videos") String folderPath) {
         try {
-            log.info("Uploading video: {}", videoFile.getOriginalFilename());
-            String videoUrl = uploadService.uploadVideo(videoFile, bucketName, folderPath);
-
-            Map<String, String> data = new HashMap<>();
-            data.put("videoUrl", videoUrl);
-            data.put("videoName", videoFile.getOriginalFilename());
-            data.put("videoSize", String.valueOf(videoFile.getSize()));
-
-            return ResponseEntity.ok(ApiResponse.success("Video uploaded successfully", data));
+            log.info("Upload video: {}", videoFile.getOriginalFilename());
+            UploadResponse response = uploadService.uploadVideo(videoFile, bucketName, folderPath);
+            return ResponseEntity.ok(ApiResponse.success("Video uploaded successfully", response));
         } catch (IllegalArgumentException e) {
-            log.error("Validation error: {}", e.getMessage());
+            log.warn("Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Validation error: " + e.getMessage()));
         } catch (IOException e) {
@@ -116,25 +83,16 @@ public class UploadController {
         }
     }
 
-    /**
-     * Upload multiple videos
-     * POST /api/uploads/videos
-     */
     @PostMapping("/videos")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMultipleVideos(
+    public ResponseEntity<ApiResponse<List<UploadResponse>>> uploadMultipleVideos(
             @RequestParam("videos") List<MultipartFile> videoFiles,
             @RequestParam(value = "folderPath", defaultValue = "videos") String folderPath) {
         try {
-            log.info("Uploading {} videos", videoFiles.size());
-            List<String> videoUrls = uploadService.uploadMultipleVideos(videoFiles, bucketName, folderPath);
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("videoUrls", videoUrls);
-            data.put("totalVideos", videoFiles.size());
-
-            return ResponseEntity.ok(ApiResponse.success("Videos uploaded successfully", data));
+            log.info("Upload {} videos", videoFiles.size());
+            List<UploadResponse> responses = uploadService.uploadMultipleVideos(videoFiles, bucketName, folderPath);
+            return ResponseEntity.ok(ApiResponse.success("Videos uploaded successfully", responses));
         } catch (IllegalArgumentException e) {
-            log.error("Validation error: {}", e.getMessage());
+            log.warn("Validation error: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Validation error: " + e.getMessage()));
         } catch (IOException e) {
@@ -144,15 +102,10 @@ public class UploadController {
         }
     }
 
-    /**
-     * Delete a file
-     * DELETE /api/uploads/delete?fileKey=path/to/file.txt
-     */
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<Void>> deleteFile(
-            @RequestParam("fileKey") String fileKey) {
+    public ResponseEntity<ApiResponse<Void>> deleteFile(@RequestParam("fileKey") String fileKey) {
         try {
-            log.info("Deleting file: {}", fileKey);
+            log.info("Delete file: {}", fileKey);
             uploadService.deleteFile(bucketName, fileKey);
             return ResponseEntity.ok(ApiResponse.success("File deleted successfully", null));
         } catch (Exception e) {
@@ -162,23 +115,30 @@ public class UploadController {
         }
     }
 
-    /**
-     * Generate presigned URL for file access
-     * GET /api/uploads/presigned-url?fileKey=path/to/file.txt&expirationMinutes=60
-     */
     @GetMapping("/presigned-url")
-    public ResponseEntity<ApiResponse<Map<String, String>>> generatePresignedUrl(
+    public ResponseEntity<ApiResponse<?>> getPresignedUrl(
             @RequestParam("fileKey") String fileKey,
             @RequestParam(value = "expirationMinutes", defaultValue = "60") int expirationMinutes) {
         try {
-            log.info("Generating presigned URL for: {}", fileKey);
+            log.info("Generate presigned URL for: {} (expires in {} minutes)", fileKey, expirationMinutes);
+            
+            if (fileKey == null || fileKey.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("fileKey is required"));
+            }
+
+            if (expirationMinutes < 1 || expirationMinutes > 1440) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("expirationMinutes must be between 1 and 1440"));
+            }
+
             String presignedUrl = uploadService.generatePresignedUrl(bucketName, fileKey, expirationMinutes);
-
-            Map<String, String> data = new HashMap<>();
-            data.put("presignedUrl", presignedUrl);
-            data.put("expirationMinutes", String.valueOf(expirationMinutes));
-
-            return ResponseEntity.ok(ApiResponse.success("Presigned URL generated successfully", data));
+            return ResponseEntity.ok(ApiResponse.success("Presigned URL generated", 
+                    Map.of(
+                            "presignedUrl", presignedUrl,
+                            "expirationInSeconds", expirationMinutes * 60,
+                            "fileKey", fileKey
+                    )));
         } catch (Exception e) {
             log.error("Error generating presigned URL", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -186,27 +146,26 @@ public class UploadController {
         }
     }
 
-    /**
-     * Check if file exists
-     * GET /api/uploads/exists?fileKey=path/to/file.txt
-     */
     @GetMapping("/exists")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> fileExists(
-            @RequestParam("fileKey") String fileKey) {
+    public ResponseEntity<ApiResponse<?>> fileExists(@RequestParam("fileKey") String fileKey) {
         try {
-            log.info("Checking file existence: {}", fileKey);
+            log.info("Check file exists: {}", fileKey);
+            
+            if (fileKey == null || fileKey.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("fileKey is required"));
+            }
+
             boolean exists = uploadService.fileExists(bucketName, fileKey);
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("fileKey", fileKey);
-            data.put("exists", exists);
-
-            String message = exists ? "File exists" : "File does not exist";
-            return ResponseEntity.ok(ApiResponse.success(message, data));
+            return ResponseEntity.ok(ApiResponse.success("File check completed",
+                    Map.of(
+                            "fileKey", fileKey,
+                            "exists", exists
+                    )));
         } catch (Exception e) {
             log.error("Error checking file existence", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Failed to check file existence: " + e.getMessage()));
+                    .body(ApiResponse.error("Failed to check file: " + e.getMessage()));
         }
     }
 }
