@@ -35,7 +35,9 @@ public class UploadServiceImpl implements UploadService {
     @Value("${aws.s3.max-file-size:52428800}")
     private long maxFileSize;
 
-    @Value("${aws.s3.allowed-file-types:jpg,mp4,jpeg,png,gif,pdf,doc,docx,xls,xlsx}")
+
+    @Value("${aws.s3.allowed-file-types:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp4}")
+
     private String allowedFileTypes;
 
     @Value("${aws.s3.allowed-video-types:mp4,avi,mov,mkv,flv,wmv,webm}")
