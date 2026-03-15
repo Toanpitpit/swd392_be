@@ -39,6 +39,6 @@ public class Dispute {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opened_by_id", insertable = false, updatable = false)
-    private users openedBy;
+    private Users openedBy;
 }
 

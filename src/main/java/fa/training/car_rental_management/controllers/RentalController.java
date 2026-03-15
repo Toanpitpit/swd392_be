@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -196,7 +197,7 @@ public class RentalController {
                     .startTime(bookingData.getStartTime())
                     .endTime(bookingData.getEndTime())
                     .paymentId(payment.isPresent() ? payment.get().getId() : null)
-                    .paymentAmount(payment.isPresent() ? payment.get().getAmount() : null)
+                    .paymentAmount(BigDecimal.valueOf(payment.isPresent() ? payment.get().getAmount() : null))
                     .paymentStatus(payment.isPresent() ? payment.get().getStatus().toString() : null)
                     .inspectionId(inspection.isPresent() ? inspection.get().getId() : null)
                     .inspectionType(inspection.isPresent() ? inspection.get().getType().toString() : null)

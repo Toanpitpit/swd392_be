@@ -38,6 +38,6 @@ public class ModerationLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moderator_id", insertable = false, updatable = false)
-    private users moderator;
+    private Users moderator;
 }
 

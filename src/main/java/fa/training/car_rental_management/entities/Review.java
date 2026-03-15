@@ -45,10 +45,10 @@ public class Review {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", insertable = false, updatable = false)
-    private users author;
+    private Users author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_user_id", insertable = false, updatable = false)
-    private users targetUser;
+    private Users targetUser;
 }
 

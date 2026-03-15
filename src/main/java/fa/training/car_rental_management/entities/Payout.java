@@ -34,6 +34,6 @@ public class Payout {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", insertable = false, updatable = false)
-    private users owner;
+    private Users owner;
 }
 
