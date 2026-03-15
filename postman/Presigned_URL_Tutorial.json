@@ -1,0 +1,231 @@
+{
+  "info": {
+    "_postman_id": "presigned-url-demo",
+    "name": "AWS S3 Presigned URL - Demo Collection",
+    "description": "Hướng dẫn sử dụng Presigned URL đúng chuẩn AWS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "📤 1. Upload File (Bước 1)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "folderPath",
+              "value": "files",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/uploads/file",
+          "host": ["{{base_url}}"],
+          "path": ["api", "uploads", "file"]
+        },
+        "description": "📌 Bước 1: Upload file lên S3\n\nSteps:\n1. Chọn file từ máy tính\n2. Chọn folderPath (mặc định: files)\n3. Click Send\n4. Lấy fileKey từ URL response (ví dụ: files/550e8400-e29b-41d4-a716-446655440000.pdf)"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/uploads/file",
+              "host": ["{{base_url}}"],
+              "path": ["api", "uploads", "file"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "cookie": [],
+          "body": "{\n  \"status\": \"success\",\n  \"message\": \"File uploaded successfully\",\n  \"data\": {\n    \"fileUrl\": \"https://my-bucket.s3.us-east-1.amazonaws.com/files/550e8400-e29b-41d4-a716-446655440000.pdf\",\n    \"fileName\": \"document.pdf\",\n    \"fileSize\": \"2048000\"\n  }\n}\n\n✅ Lấy phần sau 'files/': 550e8400-e29b-41d4-a716-446655440000.pdf\n📋 fileKey = files/550e8400-e29b-41d4-a716-446655440000.pdf"
+        }
+      ]
+    },
+    {
+      "name": "🔑 2. Generate Presigned URL (Bước 2) - KHUYÊN DÙNG",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/uploads/presigned-url?fileKey={{fileKey}}&expirationMinutes=60",
+          "host": ["{{base_url}}"],
+          "path": ["api", "uploads", "presigned-url"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "{{fileKey}}",
+              "description": "Đường dẫn file trong S3 (ví dụ: files/550e8400-e29b-41d4-a716-446655440000.pdf)"
+            },
+            {
+              "key": "expirationMinutes",
+              "value": "60",
+              "description": "Thời hạn URL (tính bằng phút, mặc định 60)"
+            }
+          ]
+        },
+        "description": "🔐 Bước 2: Lấy Presigned URL (CÁCH AN TOÀN NHẤT)\n\n📌 Yêu cầu:\n- fileKey: Lấy từ response bước 1\n- expirationMinutes: 30-120 phút (tùy chọn)\n\n⏰ Sau thời gian hết hạn:\n- URL không còn hiệu lực\n- Trả về 403 Forbidden\n\n🔒 Tại sao an toàn?\n- URL chứa Signature AWS (không thể giả mạo)\n- Hết hạn tự động (không công khai vĩnh viễn)\n- Bucket vẫn Private\n- Backend biết ai download"
+      },
+      "response": [
+        {
+          "name": "Success - Presigned URL Generated",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/uploads/presigned-url?fileKey=files/550e8400-e29b-41d4-a716-446655440000.pdf&expirationMinutes=60",
+              "host": ["{{base_url}}"],
+              "path": ["api", "uploads", "presigned-url"],
+              "query": [
+                {
+                  "key": "fileKey",
+                  "value": "files/550e8400-e29b-41d4-a716-446655440000.pdf"
+                },
+                {
+                  "key": "expirationMinutes",
+                  "value": "60"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "cookie": [],
+          "body": "{\n  \"status\": \"success\",\n  \"message\": \"Presigned URL generated successfully\",\n  \"data\": {\n    \"presignedUrl\": \"https://my-bucket.s3.us-east-1.amazonaws.com/files/550e8400-e29b-41d4-a716-446655440000.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20260315%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260315T120000Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=...\",\n    \"expirationMinutes\": \"60\"\n  }\n}\n\n✅ Sao chép 'presignedUrl' và paste vào browser hoặc dùng để download\n⏱️ URL này hiệu lực trong 60 phút"
+        }
+      ]
+    },
+    {
+      "name": "📥 3. Download File (Bước 3) - Paste Presigned URL vào Browser",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://my-bucket.s3.us-east-1.amazonaws.com/files/550e8400-e29b-41d4-a716-446655440000.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=...",
+          "protocol": "https",
+          "host": ["my-bucket.s3.us-east-1.amazonaws.com"],
+          "path": ["files", "550e8400-e29b-41d4-a716-446655440000.pdf"],
+          "query": [
+            {
+              "key": "X-Amz-Algorithm",
+              "value": "AWS4-HMAC-SHA256"
+            },
+            {
+              "key": "X-Amz-Signature",
+              "value": "..."
+            }
+          ]
+        },
+        "description": "📌 Bước 3: Dùng Presigned URL để download/xem file\n\n🎯 Cách làm:\n1. Copy 'presignedUrl' từ response bước 2\n2. Paste vào URL box trên hoặc vào browser\n3. Click Send (hoặc Enter trong browser)\n4. File sẽ download hoặc preview\n\n⚠️ Lưu ý:\n- Không cần Authorization header\n- URL tự chứa Authentication\n- Sau 60 phút sẽ hết hạn → 403 Forbidden"
+      },
+      "response": []
+    },
+    {
+      "name": "✅ Check File Exists (Optional)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/uploads/exists?fileKey={{fileKey}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "uploads", "exists"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "{{fileKey}}"
+            }
+          ]
+        },
+        "description": "🔍 Kiểm tra file tồn tại trên S3 (Optional)\n\nDùng khi muốn xác nhận file đã upload thành công"
+      },
+      "response": []
+    },
+    {
+      "name": "❌ Delete File (Optional)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/uploads/delete?fileKey={{fileKey}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "uploads", "delete"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "{{fileKey}}"
+            }
+          ]
+        },
+        "description": "🗑️ Xóa file khỏi S3 (Optional)\n\nDùng khi muốn xóa file đã upload"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string",
+      "description": "Paste JWT token của bạn từ login API"
+    },
+    {
+      "key": "fileKey",
+      "value": "files/550e8400-e29b-41d4-a716-446655440000.pdf",
+      "type": "string",
+      "description": "Lấy từ response của Upload File API (bước 1)"
+    }
+  ]
+}
+
