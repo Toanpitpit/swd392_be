@@ -1,0 +1,384 @@
+{
+  "info": {
+    "name": "Car Rental Management - Upload API",
+    "description": "Postman collection for testing file and video upload endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Single File",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"uploadedFileUrl\", jsonData.data.fileUrl);",
+              "    console.log(\"File uploaded successfully: \" + jsonData.data.fileUrl);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "path/to/your/file.pdf"
+            },
+            {
+              "key": "folderPath",
+              "value": "documents",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/uploads/file",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "file"]
+        },
+        "description": "Upload a single file to S3"
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Multiple Files",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"uploadedFileUrls\", JSON.stringify(jsonData.data.fileUrls));",
+              "    console.log(\"Files uploaded successfully: \" + jsonData.data.totalFiles + \" files\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "files",
+              "type": "file",
+              "src": ["path/to/file1.jpg", "path/to/file2.png"]
+            },
+            {
+              "key": "folderPath",
+              "value": "images",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/uploads/files",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "files"]
+        },
+        "description": "Upload multiple files to S3"
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Single Video",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"uploadedVideoUrl\", jsonData.data.videoUrl);",
+              "    console.log(\"Video uploaded successfully: \" + jsonData.data.videoUrl);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "video",
+              "type": "file",
+              "src": "path/to/your/video.mp4"
+            },
+            {
+              "key": "folderPath",
+              "value": "videos",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/uploads/video",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "video"]
+        },
+        "description": "Upload a single video to S3 with validation"
+      },
+      "response": []
+    },
+    {
+      "name": "Upload Multiple Videos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"uploadedVideoUrls\", JSON.stringify(jsonData.data.videoUrls));",
+              "    console.log(\"Videos uploaded successfully: \" + jsonData.data.totalVideos + \" videos\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "videos",
+              "type": "file",
+              "src": ["path/to/video1.mp4", "path/to/video2.mov"]
+            },
+            {
+              "key": "folderPath",
+              "value": "videos",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/uploads/videos",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "videos"]
+        },
+        "description": "Upload multiple videos to S3 with validation"
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Presigned URL",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"presignedUrl\", jsonData.data.presignedUrl);",
+              "    console.log(\"Presigned URL generated: \" + jsonData.data.presignedUrl.substring(0, 50) + \"...\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/uploads/presigned-url?fileKey=documents/file.pdf&expirationMinutes=60",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "presigned-url"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "documents/file.pdf",
+              "description": "The key of the file in S3 bucket"
+            },
+            {
+              "key": "expirationMinutes",
+              "value": "60",
+              "description": "Presigned URL expiration time in minutes (default: 60)"
+            }
+          ]
+        },
+        "description": "Generate a presigned URL to access a file from S3 without authentication"
+      },
+      "response": []
+    },
+    {
+      "name": "Check File Exists",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    var exists = jsonData.data.exists ? \"EXISTS\" : \"NOT FOUND\";",
+              "    console.log(\"File: \" + jsonData.data.fileKey + \" - \" + exists);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/uploads/exists?fileKey=documents/file.pdf",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "exists"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "documents/file.pdf",
+              "description": "The key of the file in S3 bucket"
+            }
+          ]
+        },
+        "description": "Check if a file exists in S3 bucket"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete File",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    console.log(\"File deleted successfully\");",
+              "    pm.environment.unset(\"uploadedFileUrl\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/uploads/delete?fileKey=documents/file.pdf",
+          "host": ["{{baseUrl}}"],
+          "path": ["uploads", "delete"],
+          "query": [
+            {
+              "key": "fileKey",
+              "value": "documents/file.pdf",
+              "description": "The key of the file to delete from S3 bucket"
+            }
+          ]
+        },
+        "description": "Delete a file from S3 bucket"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set up base URL if not already set",
+          "if (!pm.environment.get('baseUrl')) {",
+          "    pm.environment.set('baseUrl', 'localhost:8080/api');",
+          "}",
+          "",
+          "// Set up token if not already set (you need to login first)",
+          "if (!pm.environment.get('token')) {",
+          "    console.warn('⚠️  Token not set. Please login first and set the token in environment variables.');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Token - Get this from login endpoint"
+    },
+    {
+      "key": "uploadedFileUrl",
+      "value": "",
+      "type": "string",
+      "description": "URL of last uploaded file"
+    },
+    {
+      "key": "uploadedVideoUrl",
+      "value": "",
+      "type": "string",
+      "description": "URL of last uploaded video"
+    },
+    {
+      "key": "presignedUrl",
+      "value": "",
+      "type": "string",
+      "description": "Last generated presigned URL"
+    }
+  ]
+}
+

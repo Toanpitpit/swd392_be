@@ -6,6 +6,7 @@ import fa.training.car_rental_management.entities.Vehicle;
 import fa.training.car_rental_management.entities.users;
 import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.repository.BookingRepository;
+import fa.training.car_rental_management.services.BookingService;
 import fa.training.car_rental_management.util.BookingValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
