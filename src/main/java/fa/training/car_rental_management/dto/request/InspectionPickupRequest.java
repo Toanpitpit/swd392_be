@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,8 +15,7 @@ import lombok.Setter;
 @Builder
 public class InspectionPickupRequest {
     private Integer bookingId;
-    private Integer inspectorId;
     private String comments;
     private String carStatus;
+    private List<String> photoKeyPaths;
 }
-

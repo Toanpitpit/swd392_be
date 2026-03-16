@@ -1,12 +1,16 @@
 package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
+import fa.training.car_rental_management.dto.request.InspectionPickupRequest;
+import fa.training.car_rental_management.dto.response.InspectionPickupResponse;
 import fa.training.car_rental_management.entities.Inspection;
 import fa.training.car_rental_management.enums.CarStatus;
 import fa.training.car_rental_management.enums.InspectionType;
 import fa.training.car_rental_management.services.InspectionService;
+import fa.training.car_rental_management.util.JwtService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +21,13 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/inspections")
+@RequestMapping("/inspections")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class InspectionController {
 
-    @Autowired
-    private InspectionService inspectionService;
+    private final InspectionService inspectionService;
+    private final JwtService jwtService;
 
     /**
      * Create inspection (PICKUP or RETURN)
@@ -42,6 +47,27 @@ public class InspectionController {
             log.error("Error creating inspection", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Failed to create inspection: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/pickup")
+    public ResponseEntity<ApiResponse<InspectionPickupResponse>> createPickupRecord(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody InspectionPickupRequest request) {
+        log.info("Received request to create pickup record for booking: {}", request.getBookingId());
+        try {
+            String token = authHeader.substring(7);
+            Integer inspectorId = jwtService.extractId(token)
+                    .orElseThrow(() -> new RuntimeException("Invalid token: inspectorId not found"));
+
+            InspectionPickupResponse response = inspectionService.createPickupRecord(request, inspectorId);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Pickup record created successfully", response));
+        } catch (Exception e) {
+            log.error("Error creating pickup record: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Failed to create pickup record: " + e.getMessage()));
         }
     }
 
@@ -146,39 +172,6 @@ public class InspectionController {
             log.error("Error fetching inspections", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error fetching inspections"));
-        }
-    }
-
-    /**
-     * Create pickup inspection
-     * POST /api/inspections/pickup
-     */
-    @PostMapping("/pickup")
-    public ResponseEntity<ApiResponse<Inspection>> createPickupInspection(
-            @RequestParam Integer bookingId,
-            @RequestParam Integer inspectorId,
-            @RequestParam CarStatus carStatus,
-            @RequestParam(required = false) String comments) {
-        try {
-            log.info("Creating pickup inspection for booking: {}", bookingId);
-            
-            Inspection inspection = Inspection.builder()
-                    .bookingId(bookingId)
-                    .inspectorId(inspectorId)
-                    .type(InspectionType.PICKUP)
-                    .carStatus(carStatus)
-                    .comments(comments)
-                    .date(LocalDateTime.now())
-                    .build();
-            
-            Inspection createdInspection = inspectionService.createInspection(inspection);
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Pickup inspection created successfully", createdInspection));
-        } catch (Exception e) {
-            log.error("Error creating pickup inspection", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to create pickup inspection: " + e.getMessage()));
         }
     }
 
