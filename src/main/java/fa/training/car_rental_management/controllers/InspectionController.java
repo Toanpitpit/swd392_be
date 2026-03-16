@@ -27,7 +27,7 @@ public class InspectionController {
     /**
      * Create inspection (PICKUP or RETURN)
      * POST /api/inspections
-     */giti
+     */
     @PostMapping
     public ResponseEntity<ApiResponse<Inspection>> createInspection(@RequestBody Inspection inspection) {
         try {
