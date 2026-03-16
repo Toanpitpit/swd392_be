@@ -41,7 +41,6 @@ public class EnvConfig implements EnvironmentPostProcessor {
                     System.setProperty(entry.getKey(), entry.getValue());
                 }
 
-                // Add to Spring environment with highest priority
                 environment.getPropertySources()
                         .addFirst(new MapPropertySource(".env", envMap));
 
