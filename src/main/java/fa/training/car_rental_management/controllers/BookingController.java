@@ -2,6 +2,7 @@ package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+import fa.training.car_rental_management.dto.response.BookingResponse;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.services.impl.BookingServiceImpl;
@@ -95,14 +96,22 @@ public class BookingController {
      * GET /api/bookings/customer/{customerId}
      */
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByCustomerId(@PathVariable Integer customerId) {
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByCustomerId(@PathVariable Integer customerId) {
         try {
             log.info("Fetching bookings for customer: {}", customerId);
             
             List<Booking> bookings = bookingService.getBookingsByCustomerId(customerId);
+            List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
+                    .id(b.getId())
+                    .vehicleId(b.getVehicleId())
+                    .customerId(b.getCustomerId())
+                    .status(b.getStatus().name())
+                    .startTime(b.getStartTime().toString())
+                    .endTime(b.getEndTime().toString())
+                    .build()).toList();
             
             return ResponseEntity.ok(ApiResponse.success(
-                    "Bookings retrieved successfully", bookings));
+                    "Bookings retrieved successfully", responses));
         } catch (Exception e) {
             log.error("Error fetching bookings", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
