@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/bank-accounts")
+@RequestMapping("/bank-accounts")
 @CrossOrigin(origins = "*")
 public class BankAccountController {
 

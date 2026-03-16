@@ -27,5 +27,6 @@ public class VehicleResponseDTO {
     private String description;
     private VehicleStatus status;
     private Double basePrice;
+    private String imageUrl;
     private UsersResponseDTO owner;
 }
