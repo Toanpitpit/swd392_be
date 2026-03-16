@@ -35,7 +35,7 @@ public class WishlistController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Wishlist>> getWishlistById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Wishlist>> getWishlistById(@PathVariable("id") Integer id) {
         try {
             Optional<Wishlist> wishlist = wishlistService.getWishlistById(id);
             return wishlist.map(w -> ResponseEntity.ok(ApiResponse.success("Wishlist retrieved", w)))
@@ -49,7 +49,7 @@ public class WishlistController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlistsByCustomerId(@PathVariable Integer customerId) {
+    public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlistsByCustomerId(@PathVariable("customerId") Integer customerId) {
         try {
             List<Wishlist> wishlists = wishlistService.getWishlistsByCustomerId(customerId);
             return ResponseEntity.ok(ApiResponse.success("Wishlists retrieved", wishlists));
@@ -61,7 +61,7 @@ public class WishlistController {
     }
 
     @GetMapping("/vehicle/{vehicleId}")
-    public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlistsByVehicleId(@PathVariable Integer vehicleId) {
+    public ResponseEntity<ApiResponse<List<Wishlist>>> getWishlistsByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
         try {
             List<Wishlist> wishlists = wishlistService.getWishlistsByVehicleId(vehicleId);
             return ResponseEntity.ok(ApiResponse.success("Wishlists retrieved", wishlists));
@@ -73,7 +73,7 @@ public class WishlistController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Wishlist>> updateWishlist(@PathVariable Integer id, @RequestBody Wishlist wishlist) {
+    public ResponseEntity<ApiResponse<Wishlist>> updateWishlist(@PathVariable("id") Integer id, @RequestBody Wishlist wishlist) {
         try {
             wishlist.setId(id);
             Wishlist updatedWishlist = wishlistService.updateWishlist(wishlist);
@@ -86,7 +86,7 @@ public class WishlistController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteWishlist(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteWishlist(@PathVariable("id") Integer id) {
         try {
             wishlistService.deleteWishlist(id);
             return ResponseEntity.ok(ApiResponse.success("Wishlist deleted successfully", null));
