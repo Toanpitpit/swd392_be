@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/invoices")
+@RequestMapping("/invoices")
 @CrossOrigin(origins = "*")
 public class InvoiceController {
 

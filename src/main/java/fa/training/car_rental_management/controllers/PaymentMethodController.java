@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/payment-methods")
+@RequestMapping("/payment-methods")
 @CrossOrigin(origins = "*")
 public class PaymentMethodController {
 
@@ -61,7 +61,8 @@ public class PaymentMethodController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PaymentMethod>> updatePaymentMethod(@PathVariable Integer id, @RequestBody PaymentMethod paymentMethod) {
+    public ResponseEntity<ApiResponse<PaymentMethod>> updatePaymentMethod(@PathVariable Integer id,
+            @RequestBody PaymentMethod paymentMethod) {
         try {
             paymentMethod.setId(id);
             PaymentMethod updatedMethod = paymentMethodService.updatePaymentMethod(paymentMethod);
@@ -85,4 +86,3 @@ public class PaymentMethodController {
         }
     }
 }
-

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/incidents")
+@RequestMapping("/incidents")
 @CrossOrigin(origins = "*")
 public class IncidentController {
 

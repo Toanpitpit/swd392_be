@@ -59,10 +59,8 @@ public class SecurityConfig {
                         // Public endpoints - không cần authentication
                         .requestMatchers(
                                 "/auth/**",
-                                "/api/auth/**",
-                                "/api/vehicles",
-                                "/api/vehicles/public/**",
-                                "/api/public/**",
+                                "/vehicles/**",
+                                "/public/**",
                                 "/error",
                                 "/ping",
                                 "/actuator/health",
