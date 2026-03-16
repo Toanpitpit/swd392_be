@@ -50,10 +50,10 @@ public class SecurityConfig {
         http
                 // CORS Configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                
+
                 // CSRF Disabled (vì stateless)
                 .csrf(csrf -> csrf.disable())
-                
+
                 // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - không cần authentication
@@ -66,18 +66,19 @@ public class SecurityConfig {
                                 "/error",
                                 "/ping",
                                 "/actuator/health",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/payment/**"
                         ).permitAll()
-                        
+
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
-                
+
                 // Stateless Session Management
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                
+
                 // Add JWT Filter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
