@@ -33,11 +33,12 @@ public class JwtService {
     /**
      * Tạo JWT token
      */
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role , int id) {
         try {
             return Jwts.builder()
                     .setSubject(username)
                     .claim("role", role)
+                    .claim("id", id)
                     .setIssuedAt(new Date())
                     .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                     .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -62,6 +63,24 @@ public class JwtService {
             return Optional.of(claims.getSubject());
         } catch (Exception e) {
             log.debug("Invalid or expired JWT token: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+    public Optional<Integer> extractId(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getPayload();
+            Object idClaim = claims.get("id");
+            if (idClaim == null) {
+                log.warn("Claim 'id' not found in token");
+                return Optional.empty();
+            }
+            return Optional.of(Integer.parseInt(idClaim.toString()));
+        } catch (Exception e) {
+            log.error("Error extracting ID from token: {}", e.getMessage());
             return Optional.empty();
         }
     }
