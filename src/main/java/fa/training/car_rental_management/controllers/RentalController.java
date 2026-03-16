@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/rentals")
+@RequestMapping("/rentals")
 @CrossOrigin(origins = "*")
 public class RentalController {
 

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/vehicle-photos")
+@RequestMapping("/vehicle-photos")
 @CrossOrigin(origins = "*")
 public class VehiclePhotoController {
 
