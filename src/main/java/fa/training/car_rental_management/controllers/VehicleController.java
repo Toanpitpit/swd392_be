@@ -59,6 +59,7 @@ public class VehicleController {
                     .body(ApiResponse.error("Failed to fetch available vehicles: " + e.getMessage()));
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<VehicleResponseDTO>> getVehicleById(@PathVariable Integer id) {
         log.info("Fetching details for vehicle ID: {}", id);
