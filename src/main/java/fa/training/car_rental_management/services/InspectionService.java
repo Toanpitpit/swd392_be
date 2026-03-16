@@ -1,5 +1,7 @@
 package fa.training.car_rental_management.services;
 
+import fa.training.car_rental_management.dto.request.InspectionPickupRequest;
+import fa.training.car_rental_management.dto.response.InspectionPickupResponse;
 import fa.training.car_rental_management.entities.Inspection;
 import fa.training.car_rental_management.enums.InspectionType;
 
@@ -15,5 +17,6 @@ public interface InspectionService {
     List<Inspection> getAllInspections();
     Inspection updateInspection(Inspection inspection);
     void deleteInspection(Integer id);
+    InspectionPickupResponse createPickupRecord(InspectionPickupRequest request, Integer inspectorId);
 }
 

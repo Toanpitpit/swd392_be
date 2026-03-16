@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .banner-section {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .banner-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .details {
+            background-color: #f9f9f9;
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .detail-value {
+            color: #0066cc;
+            font-weight: 500;
+        }
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .status.passed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-section {
+            background-color: #f0f7ff;
+            border: 2px solid #0066cc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .status-label {
+            font-size: 14px;
+            color: #0052a3;
+            margin-bottom: 10px;
+        }
+        .status-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .notes-section {
+            background-color: #fffbea;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .notes-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .notes-content {
+            color: #666;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .message-section {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            border-left: 4px solid #0066cc;
+        }
+        .message-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .message-content {
+            line-height: 1.6;
+            color: #555;
+        }
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+        .footer {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>📋 Inspection Report</h1>
+        <p>FitHub Car Rental</p>
+    </div>
+
+    <!-- Banner Section -->
+    <div class="banner-section" th:if="${hasBanner}">
+        <img th:src="|cid:${bannerCid}|" alt="Banner" style="max-width: 100%; height: auto;">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Greeting -->
+        <div class="greeting">
+            <p>Hello <strong th:text="${fullname}">User</strong>,</p>
+        </div>
+
+        <!-- Main Message -->
+        <p>Your vehicle inspection has been completed. Here's the inspection report:</p>
+
+        <!-- Status Section -->
+        <div class="status-section">
+            <div class="status-label">Inspection Status</div>
+            <div class="status-text" th:text="${inspectionStatus}"></div>
+        </div>
+
+        <!-- Inspection Details -->
+        <div class="details">
+            <div class="detail-row">
+                <span class="detail-label">Booking ID:</span>
+                <span class="detail-value" th:text="${bookingId}"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="status"
+                      th:classappend="${inspectionStatus == 'Passed' ? 'passed' : inspectionStatus == 'Failed' ? 'failed' : 'pending'}"
+                      th:text="${inspectionStatus}"></span>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="notes-section" th:if="${notes != 'No additional notes'}">
+            <h3>Inspector Notes</h3>
+            <div class="notes-content" th:text="${notes}"></div>
+        </div>
+
+        <!-- Default Notes if none -->
+        <div class="notes-section" th:if="${notes == 'No additional notes'}">
+            <h3>Inspection Summary</h3>
+            <div class="notes-content">
+                The vehicle has been thoroughly inspected and all details are recorded in your booking report.
+            </div>
+        </div>
+
+        <!-- Custom Message from Admin -->
+        <div class="message-section" th:if="${hasMessage}">
+            <h3>Additional Information</h3>
+            <div class="message-content" th:utext="${messageHtml}"></div>
+        </div>
+
+        <!-- Next Steps -->
+        <div style="background-color: #e8f4f8; border-left: 4px solid #17a2b8; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <p><strong>What's Next?</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                <li th:if="${inspectionStatus == 'Passed'}">Your refund will be processed according to your rental agreement</li>
+                <li th:if="${inspectionStatus == 'Failed'}">Please contact support to discuss any concerns or damages</li>
+                <li>Keep this report for your records</li>
+            </ul>
+        </div>
+
+        <!-- Action Button -->
+        <div style="text-align: center;" th:if="${hasActionButton}">
+            <a th:href="${actionUrl}" class="action-button" th:text="${actionButtonText}"></a>
+        </div>
+
+        <!-- Footer Text -->
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; color: #666;">
+            <p>If you have any questions or concerns about the inspection, please contact our support team.</p>
+            <p>Thank you for using FitHub Car Rental!</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2026 FitHub Car Rental. All rights reserved.</p>
+        <p><a href="#">Support</a> | <a href="#">Contact Us</a> | <a href="#">Privacy Policy</a></p>
+    </div>
+</div>
+</body>
+</html>
+

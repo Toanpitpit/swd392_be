@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,5 +20,6 @@ public class InspectionPickupResponse {
     private String inspectionType;
     private String carStatus;
     private String date;
+    private List<String> photoKeyPaths;
 }
 

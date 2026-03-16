@@ -1,0 +1,32 @@
+package fa.training.car_rental_management.dto.response;
+
+import fa.training.car_rental_management.enums.FuelType;
+import fa.training.car_rental_management.enums.TransmissionType;
+import fa.training.car_rental_management.enums.VehicleStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class VehicleResponseDTO {
+    private Integer id;
+    private String vin;
+    private String licensePlate;
+    private String make;
+    private String model;
+    private Integer year;
+    private TransmissionType transmissionType;
+    private FuelType fuelType;
+    private Integer seatCount;
+    private String description;
+    private VehicleStatus status;
+    private Double basePrice;
+    private String imageUrl;
+    private UsersResponseDTO owner;
+}

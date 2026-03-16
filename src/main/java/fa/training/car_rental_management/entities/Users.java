@@ -16,7 +16,7 @@ import lombok.Setter;
 @Builder
 @Entity
 @Table(name = "users", schema = "carrentaldb")
-public class users {
+public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

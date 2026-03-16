@@ -25,27 +25,6 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Login endpoint
-     * POST /auth/login
-     * 
-     * Request body:
-     * {
-     *   "username": "admin",
-     *   "password": "password123"
-     * }
-     * 
-     * Response:
-     * {
-     *   "success": true,
-     *   "message": "Login successful",
-     *   "data": {
-     *     "token": "eyJhbGc...",
-     *     "username": "admin",
-     *     "role": "ROLE_ADMIN"
-     *   }
-     * }
-     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
         try {
@@ -63,36 +42,42 @@ public class AuthController {
             }
 
             String role = "CUSTOMER";
+            int id = 0;
 
-            // Support both username and email login
             String username = request.getUsername().toLowerCase();
             
             // Admin user
             if (("admin".equals(username) || "admin@carental.com".equals(username)) && 
                 "admin123".equals(request.getPassword())) {
                 role = "ADMIN";
+                id =1;
             } 
             // Car Owner user
             else if (("car_owner".equals(username) || "owner1@carental.com".equals(username)) && 
                      "owner123".equals(request.getPassword())) {
                 role = "CAR_OWNER";
+                id =2 ;
             } 
             // Customer users
-            else if (("customer".equals(username) || "customer1@carental.com".equals(username) || 
-                      "customer2@carental.com".equals(username)) && 
-                     "customer123".equals(request.getPassword())) {
+            else if (("customer1".equals(username) || "customer1@carental.com".equals(username) && "customer123".equals(request.getPassword()))) {
                 role = "CUSTOMER";
-            } 
+                id =3 ;
+            }
+            else if (("customer2".equals(username) || "customer2@carental.com".equals(username) && "customer123".equals(request.getPassword()))) {
+                role = "CUSTOMER";
+                id =4 ;
+            }
+
             else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("Invalid username or password"));
             }
 
-            // Tạo JWT token
-            String token = jwtService.generateToken(request.getUsername(), role);
+            String token = jwtService.generateToken(request.getUsername(), role,id);
 
             LoginResponse response = LoginResponse.builder()
                     .token(token)
+                    .id(id)
                     .username(request.getUsername())
                     .role(role)
                     .build();
@@ -137,13 +122,5 @@ public class AuthController {
         }
     }
 
-    /**
-     * Health check
-     * GET /auth/ping
-     */
-    @GetMapping("/ping")
-    public ResponseEntity<ApiResponse<String>> ping() {
-        return ResponseEntity.ok(ApiResponse.success("Pong", "Auth service is running"));
-    }
 }
 

@@ -60,11 +60,11 @@ public class Vehicle {
     @Column(name = "status", columnDefinition = "VARCHAR(50) DEFAULT 'DRAFT'")
     private VehicleStatus status;
 
-    @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal basePrice;
+    @Column(name = "base_price", nullable = false)
+    private Double basePrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", insertable = false, updatable = false)
-    private users owner;
+    private Users owner;
 }
 

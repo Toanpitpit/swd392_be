@@ -52,6 +52,6 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", insertable = false, updatable = false)
-    private users customer;
+    private Users customer;
 }
 

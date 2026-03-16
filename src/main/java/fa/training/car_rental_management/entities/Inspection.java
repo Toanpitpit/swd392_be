@@ -49,6 +49,6 @@ public class Inspection {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inspector_id", insertable = false, updatable = false)
-    private users inspector;
+    private Users inspector;
 }
 

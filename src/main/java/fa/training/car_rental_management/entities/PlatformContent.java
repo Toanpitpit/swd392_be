@@ -38,6 +38,6 @@ public class PlatformContent {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by", insertable = false, updatable = false)
-    private users updater;
+    private Users updater;
 }
 

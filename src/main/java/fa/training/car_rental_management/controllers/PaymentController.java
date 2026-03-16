@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/payments")
 @CrossOrigin(origins = "*")
 public class PaymentController {
 
@@ -157,7 +157,7 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<Payment>> processSecurityDeposit(
             @RequestParam Integer bookingId,
             @RequestParam Integer payerId,
-            @RequestParam BigDecimal amount) {
+            @RequestParam Double amount) {
         try {
             log.info("Processing security deposit for booking: {}", bookingId);
             

@@ -1,6 +1,6 @@
 package fa.training.car_rental_management.services.impl;
 
-import fa.training.car_rental_management.entities.users;
+import fa.training.car_rental_management.entities.Users;
 import fa.training.car_rental_management.repository.UserRepository;
 import fa.training.car_rental_management.services.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,31 +20,31 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Override
-    public users createUser(users user) {
+    public Users createUser(Users user) {
         log.info("Creating new user with email: {}", user.getEmail());
         return userRepository.save(user);
     }
 
     @Override
-    public Optional<users> getUserById(Integer id) {
+    public Optional<Users> getUserById(Integer id) {
         log.info("Fetching user with id: {}", id);
         return userRepository.findById(id);
     }
 
     @Override
-    public Optional<users> getUserByEmail(String email) {
+    public Optional<Users> getUserByEmail(String email) {
         log.info("Fetching user with email: {}", email);
         return userRepository.findByEmail(email);
     }
 
     @Override
-    public List<users> getAllUsers() {
+    public List<Users> getAllUsers() {
         log.info("Fetching all users");
         return userRepository.findAll();
     }
 
     @Override
-    public users updateUser(users user) {
+    public Users updateUser(Users user) {
         log.info("Updating user with id: {}", user.getId());
         return userRepository.save(user);
     }
