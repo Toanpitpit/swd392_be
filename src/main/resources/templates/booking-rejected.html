@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Rejected</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: Arial, sans-serif;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td align="center" style="padding: 20px 0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e1e4e8; overflow: hidden;">
+                <tr>
+                    <td align="center" style="background-color: #fab1a0; padding: 30px 20px;">
+                        <h1 style="color: #d63031; margin: 0; font-size: 22px;">YÊU CẦU BỊ TỪ CHỐI</h1>
+                        <p style="color: #636e72; margin: 5px 0 0 0;">Mã đặt xe: #<span th:text="${bookingId}">123</span></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding: 40px 30px;">
+                        <h2 style="color: #2d3436; font-size: 18px;">Chào <span th:text="${receiverName}">Khách hàng</span>,</h2>
+                        <p style="color: #636e72; line-height: 1.6;">Rất tiếc, yêu cầu đặt xe <strong><span th:text="${vehicleName}">Toyota Vios</span></strong> của bạn đã không được chấp nhận.</p>
+
+                        <div style="background-color: #fff5f5; border-left: 4px solid #ff7675; padding: 15px; margin: 20px 0;">
+                            <strong style="color: #d63031;">Lý do từ chối:</strong>
+                            <p style="margin: 5px 0 0 0; color: #2d3436;" th:text="${rejectReason}">Chủ xe bận đột xuất.</p>
+                        </div>
+
+                        <p style="color: #636e72; font-size: 14px;">Nếu bạn đã thực hiện thanh toán, tiền sẽ được hoàn trả vào tài khoản của bạn trong vòng 3-5 ngày làm việc theo chính sách của VNPAY.</p>
+
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px;">
+                            <tr>
+                                <td align="center">
+                                    <a th:href="${actionUrl}" style="background-color: #0984e3; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                        Tìm kiếm xe khác
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="background-color: #f1f2f6; padding: 20px; text-align: center;">
+                        <p style="margin: 0; color: #b2bec3; font-size: 12px;">© 2026 FitHub Car Rental. Xin lỗi vì sự bất tiện này.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
