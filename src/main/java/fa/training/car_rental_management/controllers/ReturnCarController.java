@@ -20,7 +20,7 @@ public class ReturnCarController {
 
     @PostMapping(value = "/{id}/return", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<List<String>>> returnCar(
-            @PathVariable Integer id,
+            @PathVariable("id") Integer id,
             @ModelAttribute ReturnCarRequest request) {
 
         List<String> urls = returnCarService.returnCar(id, request);

@@ -40,10 +40,10 @@ public class VehicleController {
 
     @GetMapping("/available")
     public ResponseEntity<ApiResponse<Page<VehicleResponseDTO>>> getAvailableVehicles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam LocalDateTime startDate ,
-            @RequestParam LocalDateTime endDate) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam("startDate") LocalDateTime startDate ,
+            @RequestParam("endDate") LocalDateTime endDate) {
         try {
             log.info("Getting available vehicles - page: {}, size: {}", page, size);
 
@@ -61,7 +61,7 @@ public class VehicleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehicleResponseDTO>> getVehicleById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<VehicleResponseDTO>> getVehicleById(@PathVariable("id") Integer id) {
         log.info("Fetching details for vehicle ID: {}", id);
         VehicleResponseDTO vehicle = vehicleService.getVehicleById(id);
         return ResponseEntity.ok(ApiResponse.success("Vehicle details retrieved", vehicle));

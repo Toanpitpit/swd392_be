@@ -52,7 +52,7 @@ public class InspectionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching inspection with id: {}", id);
             
@@ -73,7 +73,7 @@ public class InspectionController {
 
 
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             log.info("Fetching inspections for booking: {}", bookingId);
             
