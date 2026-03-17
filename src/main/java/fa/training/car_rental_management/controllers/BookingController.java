@@ -52,14 +52,23 @@ public class BookingController {
      * GET /api/bookings/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Booking>> getBookingById(@PathVariable("id") Integer id) {
+    public ResponseEntity<ApiResponse<BookingResponse>> getBookingById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching booking with id: {}", id);
             
             Optional<Booking> booking = bookingService.getBookingById(id);
             
             if (booking.isPresent()) {
-                return ResponseEntity.ok(ApiResponse.success("Booking retrieved successfully", booking.get()));
+                Booking b = booking.get();
+                BookingResponse response = BookingResponse.builder()
+                        .id(b.getId())
+                        .vehicleId(b.getVehicleId())
+                        .customerId(b.getCustomerId())
+                        .status(b.getStatus().name())
+                        .startTime(b.getStartTime().toString())
+                        .endTime(b.getEndTime().toString())
+                        .build();
+                return ResponseEntity.ok(ApiResponse.success("Booking retrieved successfully", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
@@ -76,14 +85,22 @@ public class BookingController {
      * GET /api/bookings/vehicle/{vehicleId}
      */
     @GetMapping("/vehicle/{vehicleId}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
         try {
             log.info("Fetching bookings for vehicle: {}", vehicleId);
             
             List<Booking> bookings = bookingService.getBookingsByVehicleId(vehicleId);
+            List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
+                    .id(b.getId())
+                    .vehicleId(b.getVehicleId())
+                    .customerId(b.getCustomerId())
+                    .status(b.getStatus().name())
+                    .startTime(b.getStartTime().toString())
+                    .endTime(b.getEndTime().toString())
+                    .build()).toList();
             
             return ResponseEntity.ok(ApiResponse.success(
-                    "Bookings retrieved successfully", bookings));
+                    "Bookings retrieved successfully", responses));
         } catch (Exception e) {
             log.error("Error fetching bookings", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -124,14 +141,22 @@ public class BookingController {
      * GET /api/bookings/status/{status}
      */
     @GetMapping("/status/{status}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByStatus(@PathVariable("status") BookingStatus status) {
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByStatus(@PathVariable("status") BookingStatus status) {
         try {
             log.info("Fetching bookings with status: {}", status);
             
             List<Booking> bookings = bookingService.getBookingsByStatus(status);
+            List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
+                    .id(b.getId())
+                    .vehicleId(b.getVehicleId())
+                    .customerId(b.getCustomerId())
+                    .status(b.getStatus().name())
+                    .startTime(b.getStartTime().toString())
+                    .endTime(b.getEndTime().toString())
+                    .build()).toList();
             
             return ResponseEntity.ok(ApiResponse.success(
-                    "Bookings retrieved successfully", bookings));
+                    "Bookings retrieved successfully", responses));
         } catch (Exception e) {
             log.error("Error fetching bookings", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -145,14 +170,22 @@ public class BookingController {
      * GET /api/bookings
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Booking>>> getAllBookings() {
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getAllBookings() {
         try {
             log.info("Fetching all bookings");
             
             List<Booking> bookings = bookingService.getAllBookings();
+            List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
+                    .id(b.getId())
+                    .vehicleId(b.getVehicleId())
+                    .customerId(b.getCustomerId())
+                    .status(b.getStatus().name())
+                    .startTime(b.getStartTime().toString())
+                    .endTime(b.getEndTime().toString())
+                    .build()).toList();
             
             return ResponseEntity.ok(ApiResponse.success(
-                    "All bookings retrieved successfully", bookings));
+                    "All bookings retrieved successfully", responses));
         } catch (Exception e) {
             log.error("Error fetching bookings", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -166,7 +199,7 @@ public class BookingController {
      * PUT /api/bookings/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Booking>> updateBooking(
+    public ResponseEntity<ApiResponse<BookingResponse>> updateBooking(
             @PathVariable("id") Integer id, 
             @RequestBody Booking booking) {
         try {
@@ -178,8 +211,17 @@ public class BookingController {
                 booking.setId(id);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
+                BookingResponse response = BookingResponse.builder()
+                        .id(updatedBooking.getId())
+                        .vehicleId(updatedBooking.getVehicleId())
+                        .customerId(updatedBooking.getCustomerId())
+                        .status(updatedBooking.getStatus().name())
+                        .startTime(updatedBooking.getStartTime().toString())
+                        .endTime(updatedBooking.getEndTime().toString())
+                        .build();
+                
                 return ResponseEntity.ok(ApiResponse.success(
-                        "Booking updated successfully", updatedBooking));
+                        "Booking updated successfully", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
@@ -198,7 +240,7 @@ public class BookingController {
      */
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<Booking>> updateBookingStatus(
+    public ResponseEntity<ApiResponse<BookingResponse>> updateBookingStatus(
             @PathVariable("id") Integer id,
             @RequestParam("status") BookingStatus status) {
         try {
@@ -211,8 +253,17 @@ public class BookingController {
                 booking.setStatus(status);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
+                BookingResponse response = BookingResponse.builder()
+                        .id(updatedBooking.getId())
+                        .vehicleId(updatedBooking.getVehicleId())
+                        .customerId(updatedBooking.getCustomerId())
+                        .status(updatedBooking.getStatus().name())
+                        .startTime(updatedBooking.getStartTime().toString())
+                        .endTime(updatedBooking.getEndTime().toString())
+                        .build();
+                
                 return ResponseEntity.ok(ApiResponse.success(
-                        "Booking status updated successfully", updatedBooking));
+                        "Booking status updated successfully", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
@@ -231,7 +282,7 @@ public class BookingController {
      */
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<ApiResponse<Booking>> rejectBooking(
+    public ResponseEntity<ApiResponse<BookingResponse>> rejectBooking(
             @PathVariable("id") Integer id,
             @RequestParam("reason") String reason) {
         try {
@@ -245,8 +296,17 @@ public class BookingController {
                 booking.setRejectionReason(reason);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
+                BookingResponse response = BookingResponse.builder()
+                        .id(updatedBooking.getId())
+                        .vehicleId(updatedBooking.getVehicleId())
+                        .customerId(updatedBooking.getCustomerId())
+                        .status(updatedBooking.getStatus().name())
+                        .startTime(updatedBooking.getStartTime().toString())
+                        .endTime(updatedBooking.getEndTime().toString())
+                        .build();
+                
                 return ResponseEntity.ok(ApiResponse.success(
-                        "Booking rejected successfully", updatedBooking));
+                        "Booking rejected successfully", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
@@ -266,7 +326,7 @@ public class BookingController {
      */
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<Booking>> approveBooking(@PathVariable("id") Integer id) {
+    public ResponseEntity<ApiResponse<BookingResponse>> approveBooking(@PathVariable("id") Integer id) {
         try {
             log.info("Approving booking id: {}", id);
             
@@ -277,8 +337,17 @@ public class BookingController {
                 booking.setStatus(BookingStatus.APPROVED);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
+                BookingResponse response = BookingResponse.builder()
+                        .id(updatedBooking.getId())
+                        .vehicleId(updatedBooking.getVehicleId())
+                        .customerId(updatedBooking.getCustomerId())
+                        .status(updatedBooking.getStatus().name())
+                        .startTime(updatedBooking.getStartTime().toString())
+                        .endTime(updatedBooking.getEndTime().toString())
+                        .build();
+                
                 return ResponseEntity.ok(ApiResponse.success(
-                        "Booking approved successfully", updatedBooking));
+                        "Booking approved successfully", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
@@ -295,7 +364,7 @@ public class BookingController {
      * PATCH /api/bookings/{id}/activate
      */
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<ApiResponse<Booking>> activateBooking(@PathVariable("id") Integer id) {
+    public ResponseEntity<ApiResponse<BookingResponse>> activateBooking(@PathVariable("id") Integer id) {
         try {
             log.info("Activating booking id: {}", id);
             
@@ -306,8 +375,17 @@ public class BookingController {
                 booking.setStatus(BookingStatus.ACTIVE);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
+                BookingResponse response = BookingResponse.builder()
+                        .id(updatedBooking.getId())
+                        .vehicleId(updatedBooking.getVehicleId())
+                        .customerId(updatedBooking.getCustomerId())
+                        .status(updatedBooking.getStatus().name())
+                        .startTime(updatedBooking.getStartTime().toString())
+                        .endTime(updatedBooking.getEndTime().toString())
+                        .build();
+                
                 return ResponseEntity.ok(ApiResponse.success(
-                        "Booking activated successfully (Rental Started)", updatedBooking));
+                        "Booking activated successfully (Rental Started)", response));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Booking not found with id: " + id));
