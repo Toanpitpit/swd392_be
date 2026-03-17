@@ -5,6 +5,9 @@ import fa.training.car_rental_management.entities.Payment;
 import fa.training.car_rental_management.enums.PaymentStatus;
 import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.services.PaymentService;
+import fa.training.car_rental_management.services.BookingService;
+import fa.training.car_rental_management.entities.Booking;
+import fa.training.car_rental_management.enums.BookingStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,9 @@ public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private BookingService bookingService;
 
     /**
      * Create payment for booking
@@ -177,6 +183,38 @@ public class PaymentController {
             log.error("Error processing security deposit", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Failed to process security deposit: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Process rental payment and update booking status
+     * POST /api/payments/process
+     */
+    @PostMapping("/process")
+    public ResponseEntity<ApiResponse<Payment>> processRentalPayment(@RequestBody Payment payment) {
+        try {
+            log.info("Processing rental payment for booking: {} by payer: {}", 
+                    payment.getBookingId(), payment.getPayerId());
+            
+            // Create payment with COMPLETED status
+            payment.setStatus(PaymentStatus.COMPLETED);
+            Payment createdPayment = paymentService.createPayment(payment);
+            
+            // Update booking status from AWAITING_PAYMENT to APPROVED
+            Optional<Booking> booking = bookingService.getBookingById(payment.getBookingId());
+            if (booking.isPresent()) {
+                Booking existingBooking = booking.get();
+                existingBooking.setStatus(BookingStatus.APPROVED);
+                bookingService.updateBooking(existingBooking);
+                log.info("Updated booking {} status to APPROVED after payment", payment.getBookingId());
+            }
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Payment processed successfully", createdPayment));
+        } catch (Exception e) {
+            log.error("Error processing payment", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Failed to process payment: " + e.getMessage()));
         }
     }
 
