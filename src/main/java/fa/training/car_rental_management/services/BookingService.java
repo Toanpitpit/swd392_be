@@ -2,6 +2,8 @@ package fa.training.car_rental_management.services;
 
 
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+import fa.training.car_rental_management.dto.request.ConfirmReturnRequest;
+import fa.training.car_rental_management.dto.response.WaitingReturnResponse;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
 import org.springframework.stereotype.Service;
@@ -21,4 +23,6 @@ public interface BookingService {
     List<Booking> getAllBookings();
     Booking updateBooking(Booking booking);
     void deleteBooking(Integer id);
+    List<WaitingReturnResponse> getWaitingReturnConfirm(Integer ownerId);
+    void confirmReturn(Integer bookingId, ConfirmReturnRequest request);
 }

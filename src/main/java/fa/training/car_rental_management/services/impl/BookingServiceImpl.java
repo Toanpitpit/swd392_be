@@ -1,18 +1,11 @@
 package fa.training.car_rental_management.services.impl;
 
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
-import fa.training.car_rental_management.entities.Booking;
-import fa.training.car_rental_management.entities.Payment;
-import fa.training.car_rental_management.entities.Vehicle;
-import fa.training.car_rental_management.entities.Users;
-import fa.training.car_rental_management.enums.BookingStatus;
-import fa.training.car_rental_management.enums.PaymentStatus;
-import fa.training.car_rental_management.enums.PaymentType;
-import fa.training.car_rental_management.enums.VehicleStatus;
-import fa.training.car_rental_management.repository.BookingRepository;
-import fa.training.car_rental_management.repository.PaymentRepository;
-import fa.training.car_rental_management.repository.UserRepository;
-import fa.training.car_rental_management.repository.VehicleRepository;
+import fa.training.car_rental_management.dto.request.ConfirmReturnRequest;
+import fa.training.car_rental_management.dto.response.WaitingReturnResponse;
+import fa.training.car_rental_management.entities.*;
+import fa.training.car_rental_management.enums.*;
+import fa.training.car_rental_management.repository.*;
 import fa.training.car_rental_management.services.BookingService;
 import fa.training.car_rental_management.util.BookingValidator;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +32,8 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private InspectionRepository inspectionRepository;
     @Autowired
     private VehicleRepository vehicleRepository;
 
@@ -408,6 +403,84 @@ public class BookingServiceImpl implements BookingService {
         } catch (Exception e) {
             log.error("Error sending new booking request email to owner: {}", e.getMessage(), e);
         }
+    }
+    @Override
+    public List<WaitingReturnResponse> getWaitingReturnConfirm(Integer ownerId) {
+        return bookingRepository.findWaitingReturnConfirm(ownerId);
+    }
+
+    @Transactional
+    public void confirmReturn(Integer bookingId, ConfirmReturnRequest request) {
+
+        // 1️⃣ tìm booking
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != BookingStatus.UNDER_INSPECTION) {
+            throw new RuntimeException("Booking chưa ở trạng thái kiểm tra xe");
+        }
+
+        // 2️⃣ tìm vehicle
+        Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        // 3️⃣ tạo inspection
+        Inspection inspection = new Inspection();
+        inspection.setBookingId(bookingId);
+        inspection.setInspectorId(vehicle.getOwnerId());
+        inspection.setType(InspectionType.RETURN);
+        inspection.setCarStatus(request.getCarStatus());
+        inspection.setDate(LocalDateTime.now());
+
+        inspectionRepository.save(inspection);
+
+
+        Payment deposit = paymentRepository
+                .findByBookingIdAndTypeAndStatus(
+                        bookingId,
+                        PaymentType.SECURITY_DEPOSIT,
+                        PaymentStatus.COMPLETED
+                );
+
+        double depositAmount = deposit != null ? deposit.getAmount() : 0;
+        double fine = request.getFineAmount() != null ? request.getFineAmount() : 0;
+
+        // 5️⃣ nếu có phí phạt
+        if (fine > 0) {
+
+            Payment finePayment = new Payment();
+            finePayment.setBookingId(bookingId);
+            finePayment.setPayerId(booking.getCustomerId());
+            finePayment.setAmount(fine);
+            finePayment.setType(PaymentType.FINE);
+            finePayment.setStatus(PaymentStatus.COMPLETED);
+
+            paymentRepository.save(finePayment);
+        }
+
+        // 6️⃣ tính tiền refund
+        double refundAmount = depositAmount - fine;
+
+        if (refundAmount < 0) {
+            refundAmount = 0;
+        }
+
+        // 7️⃣ tạo refund payment
+        if (refundAmount > 0) {
+
+            Payment refund = new Payment();
+            refund.setBookingId(bookingId);
+            refund.setPayerId(booking.getCustomerId());
+            refund.setAmount(refundAmount);
+            refund.setType(PaymentType.REFUND);
+            refund.setStatus(PaymentStatus.COMPLETED);
+
+            paymentRepository.save(refund);
+        }
+
+        // 8️⃣ update booking
+        booking.setStatus(BookingStatus.COMPLETED);
+        bookingRepository.save(booking);
     }
 }
 
