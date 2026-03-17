@@ -35,7 +35,7 @@ public class IncidentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Incident>> getIncidentById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Incident>> getIncidentById(@PathVariable("id") Integer id) {
         try {
             Optional<Incident> incident = incidentService.getIncidentById(id);
             return incident.map(inc -> ResponseEntity.ok(ApiResponse.success("Incident retrieved", inc)))
@@ -49,7 +49,7 @@ public class IncidentController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Incident>>> getIncidentsByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Incident>>> getIncidentsByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             List<Incident> incidents = incidentService.getIncidentsByBookingId(bookingId);
             return ResponseEntity.ok(ApiResponse.success("Incidents retrieved", incidents));
@@ -61,7 +61,7 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Incident>> updateIncident(@PathVariable Integer id, @RequestBody Incident incident) {
+    public ResponseEntity<ApiResponse<Incident>> updateIncident(@PathVariable("id") Integer id, @RequestBody Incident incident) {
         try {
             incident.setId(id);
             Incident updatedIncident = incidentService.updateIncident(incident);
@@ -74,7 +74,7 @@ public class IncidentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteIncident(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteIncident(@PathVariable("id") Integer id) {
         try {
             incidentService.deleteIncident(id);
             return ResponseEntity.ok(ApiResponse.success("Incident deleted successfully", null));

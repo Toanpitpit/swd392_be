@@ -35,7 +35,7 @@ public class InspectionPhotoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<InspectionPhoto>> getInspectionPhotoById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<InspectionPhoto>> getInspectionPhotoById(@PathVariable("id") Integer id) {
         try {
             Optional<InspectionPhoto> photo = inspectionPhotoService.getInspectionPhotoById(id);
             return photo.map(p -> ResponseEntity.ok(ApiResponse.success("Inspection photo retrieved", p)))
@@ -49,7 +49,7 @@ public class InspectionPhotoController {
     }
 
     @GetMapping("/inspection/{inspectionId}")
-    public ResponseEntity<ApiResponse<List<InspectionPhoto>>> getPhotosByInspectionId(@PathVariable Integer inspectionId) {
+    public ResponseEntity<ApiResponse<List<InspectionPhoto>>> getPhotosByInspectionId(@PathVariable("inspectionId") Integer inspectionId) {
         try {
             List<InspectionPhoto> photos = inspectionPhotoService.getPhotosByInspectionId(inspectionId);
             return ResponseEntity.ok(ApiResponse.success("Inspection photos retrieved", photos));
@@ -61,7 +61,7 @@ public class InspectionPhotoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<InspectionPhoto>> updateInspectionPhoto(@PathVariable Integer id, @RequestBody InspectionPhoto inspectionPhoto) {
+    public ResponseEntity<ApiResponse<InspectionPhoto>> updateInspectionPhoto(@PathVariable("id") Integer id, @RequestBody InspectionPhoto inspectionPhoto) {
         try {
             inspectionPhoto.setId(id);
             InspectionPhoto updatedPhoto = inspectionPhotoService.updateInspectionPhoto(inspectionPhoto);
@@ -74,7 +74,7 @@ public class InspectionPhotoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteInspectionPhoto(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteInspectionPhoto(@PathVariable("id") Integer id) {
         try {
             inspectionPhotoService.deleteInspectionPhoto(id);
             return ResponseEntity.ok(ApiResponse.success("Inspection photo deleted successfully", null));

@@ -35,7 +35,7 @@ public class MessageController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Message>> getMessageById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Message>> getMessageById(@PathVariable("id") Integer id) {
         try {
             Optional<Message> message = messageService.getMessageById(id);
             return message.map(msg -> ResponseEntity.ok(ApiResponse.success("Message retrieved", msg)))
@@ -49,7 +49,7 @@ public class MessageController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Message>>> getMessagesByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Message>>> getMessagesByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             List<Message> messages = messageService.getMessagesByBookingId(bookingId);
             return ResponseEntity.ok(ApiResponse.success("Messages retrieved", messages));
@@ -61,7 +61,7 @@ public class MessageController {
     }
 
     @GetMapping("/sender/{senderId}")
-    public ResponseEntity<ApiResponse<List<Message>>> getMessagesBySenderId(@PathVariable Integer senderId) {
+    public ResponseEntity<ApiResponse<List<Message>>> getMessagesBySenderId(@PathVariable("senderId") Integer senderId) {
         try {
             List<Message> messages = messageService.getMessagesBySenderId(senderId);
             return ResponseEntity.ok(ApiResponse.success("Messages retrieved", messages));
@@ -73,7 +73,7 @@ public class MessageController {
     }
 
     @GetMapping("/receiver/{receiverId}")
-    public ResponseEntity<ApiResponse<List<Message>>> getMessagesByReceiverId(@PathVariable Integer receiverId) {
+    public ResponseEntity<ApiResponse<List<Message>>> getMessagesByReceiverId(@PathVariable("receiverId") Integer receiverId) {
         try {
             List<Message> messages = messageService.getMessagesByReceiverId(receiverId);
             return ResponseEntity.ok(ApiResponse.success("Messages retrieved", messages));
@@ -85,7 +85,7 @@ public class MessageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Message>> updateMessage(@PathVariable Integer id, @RequestBody Message message) {
+    public ResponseEntity<ApiResponse<Message>> updateMessage(@PathVariable("id") Integer id, @RequestBody Message message) {
         try {
             message.setId(id);
             Message updatedMessage = messageService.updateMessage(message);
@@ -98,7 +98,7 @@ public class MessageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable("id") Integer id) {
         try {
             messageService.deleteMessage(id);
             return ResponseEntity.ok(ApiResponse.success("Message deleted successfully", null));

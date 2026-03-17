@@ -34,7 +34,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Invoice>> getInvoiceById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Invoice>> getInvoiceById(@PathVariable("id") Integer id) {
         try {
             Optional<Invoice> invoice = invoiceService.getInvoiceById(id);
             return invoice.map(inv -> ResponseEntity.ok(ApiResponse.success("Invoice retrieved", inv)))
@@ -48,7 +48,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<Invoice>> getInvoiceByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<Invoice>> getInvoiceByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             Optional<Invoice> invoice = invoiceService.getInvoiceByBookingId(bookingId);
             return invoice.map(inv -> ResponseEntity.ok(ApiResponse.success("Invoice retrieved", inv)))
@@ -62,7 +62,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/number/{invoiceNumber}")
-    public ResponseEntity<ApiResponse<Invoice>> getInvoiceByNumber(@PathVariable String invoiceNumber) {
+    public ResponseEntity<ApiResponse<Invoice>> getInvoiceByNumber(@PathVariable("invoiceNumber") String invoiceNumber) {
         try {
             Optional<Invoice> invoice = invoiceService.getInvoiceByInvoiceNumber(invoiceNumber);
             return invoice.map(inv -> ResponseEntity.ok(ApiResponse.success("Invoice retrieved", inv)))
@@ -76,7 +76,7 @@ public class InvoiceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Invoice>> updateInvoice(@PathVariable Integer id, @RequestBody Invoice invoice) {
+    public ResponseEntity<ApiResponse<Invoice>> updateInvoice(@PathVariable("id") Integer id, @RequestBody Invoice invoice) {
         try {
             invoice.setId(id);
             Invoice updatedInvoice = invoiceService.updateInvoice(invoice);
@@ -89,7 +89,7 @@ public class InvoiceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable("id") Integer id) {
         try {
             invoiceService.deleteInvoice(id);
             return ResponseEntity.ok(ApiResponse.success("Invoice deleted successfully", null));

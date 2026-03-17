@@ -35,7 +35,7 @@ public class BankAccountController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BankAccount>> getBankAccountById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<BankAccount>> getBankAccountById(@PathVariable("id") Integer id) {
         try {
             Optional<BankAccount> account = bankAccountService.getBankAccountById(id);
             return account.map(acc -> ResponseEntity.ok(ApiResponse.success("Bank account retrieved", acc)))
@@ -49,7 +49,7 @@ public class BankAccountController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<BankAccount>>> getBankAccountsByUserId(@PathVariable Integer userId) {
+    public ResponseEntity<ApiResponse<List<BankAccount>>> getBankAccountsByUserId(@PathVariable("userId") Integer userId) {
         try {
             List<BankAccount> accounts = bankAccountService.getBankAccountsByUserId(userId);
             return ResponseEntity.ok(ApiResponse.success("Bank accounts retrieved", accounts));
@@ -61,7 +61,7 @@ public class BankAccountController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<BankAccount>> updateBankAccount(@PathVariable Integer id, @RequestBody BankAccount bankAccount) {
+    public ResponseEntity<ApiResponse<BankAccount>> updateBankAccount(@PathVariable("id") Integer id, @RequestBody BankAccount bankAccount) {
         try {
             bankAccount.setId(id);
             BankAccount updatedAccount = bankAccountService.updateBankAccount(bankAccount);
@@ -74,7 +74,7 @@ public class BankAccountController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteBankAccount(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteBankAccount(@PathVariable("id") Integer id) {
         try {
             bankAccountService.deleteBankAccount(id);
             return ResponseEntity.ok(ApiResponse.success("Bank account deleted successfully", null));

@@ -35,7 +35,7 @@ public class VehiclePhotoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehiclePhoto>> getVehiclePhotoById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<VehiclePhoto>> getVehiclePhotoById(@PathVariable("id") Integer id) {
         try {
             Optional<VehiclePhoto> photo = vehiclePhotoService.getVehiclePhotoById(id);
             return photo.map(p -> ResponseEntity.ok(ApiResponse.success("Vehicle photo retrieved", p)))
@@ -49,7 +49,7 @@ public class VehiclePhotoController {
     }
 
     @GetMapping("/vehicle/{vehicleId}")
-    public ResponseEntity<ApiResponse<List<VehiclePhoto>>> getPhotosByVehicleId(@PathVariable Integer vehicleId) {
+    public ResponseEntity<ApiResponse<List<VehiclePhoto>>> getPhotosByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
         try {
             List<VehiclePhoto> photos = vehiclePhotoService.getPhotosByVehicleId(vehicleId);
             return ResponseEntity.ok(ApiResponse.success("Vehicle photos retrieved", photos));
@@ -61,7 +61,7 @@ public class VehiclePhotoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehiclePhoto>> updateVehiclePhoto(@PathVariable Integer id, @RequestBody VehiclePhoto vehiclePhoto) {
+    public ResponseEntity<ApiResponse<VehiclePhoto>> updateVehiclePhoto(@PathVariable("id") Integer id, @RequestBody VehiclePhoto vehiclePhoto) {
         try {
             vehiclePhoto.setId(id);
             VehiclePhoto updatedPhoto = vehiclePhotoService.updateVehiclePhoto(vehiclePhoto);
@@ -74,7 +74,7 @@ public class VehiclePhotoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteVehiclePhoto(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteVehiclePhoto(@PathVariable("id") Integer id) {
         try {
             vehiclePhotoService.deleteVehiclePhoto(id);
             return ResponseEntity.ok(ApiResponse.success("Vehicle photo deleted successfully", null));

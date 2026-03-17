@@ -2,6 +2,7 @@ package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+import fa.training.car_rental_management.dto.response.BookingResponse;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.services.impl.BookingServiceImpl;
@@ -51,7 +52,7 @@ public class BookingController {
      * GET /api/bookings/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Booking>> getBookingById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Booking>> getBookingById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching booking with id: {}", id);
             
@@ -75,7 +76,7 @@ public class BookingController {
      * GET /api/bookings/vehicle/{vehicleId}
      */
     @GetMapping("/vehicle/{vehicleId}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByVehicleId(@PathVariable Integer vehicleId) {
+    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
         try {
             log.info("Fetching bookings for vehicle: {}", vehicleId);
             
@@ -95,14 +96,22 @@ public class BookingController {
      * GET /api/bookings/customer/{customerId}
      */
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByCustomerId(@PathVariable Integer customerId) {
+    public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByCustomerId(@PathVariable("customerId") Integer customerId) {
         try {
             log.info("Fetching bookings for customer: {}", customerId);
             
             List<Booking> bookings = bookingService.getBookingsByCustomerId(customerId);
+            List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
+                    .id(b.getId())
+                    .vehicleId(b.getVehicleId())
+                    .customerId(b.getCustomerId())
+                    .status(b.getStatus().name())
+                    .startTime(b.getStartTime().toString())
+                    .endTime(b.getEndTime().toString())
+                    .build()).toList();
             
             return ResponseEntity.ok(ApiResponse.success(
-                    "Bookings retrieved successfully", bookings));
+                    "Bookings retrieved successfully", responses));
         } catch (Exception e) {
             log.error("Error fetching bookings", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -115,7 +124,7 @@ public class BookingController {
      * GET /api/bookings/status/{status}
      */
     @GetMapping("/status/{status}")
-    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByStatus(@PathVariable BookingStatus status) {
+    public ResponseEntity<ApiResponse<List<Booking>>> getBookingsByStatus(@PathVariable("status") BookingStatus status) {
         try {
             log.info("Fetching bookings with status: {}", status);
             
@@ -158,7 +167,7 @@ public class BookingController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Booking>> updateBooking(
-            @PathVariable Integer id, 
+            @PathVariable("id") Integer id, 
             @RequestBody Booking booking) {
         try {
             log.info("Updating booking with id: {}", id);
@@ -190,8 +199,8 @@ public class BookingController {
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<Booking>> updateBookingStatus(
-            @PathVariable Integer id,
-            @RequestParam BookingStatus status) {
+            @PathVariable("id") Integer id,
+            @RequestParam("status") BookingStatus status) {
         try {
             log.info("Updating booking status to: {} for booking id: {}", status, id);
             
@@ -223,8 +232,8 @@ public class BookingController {
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<Booking>> rejectBooking(
-            @PathVariable Integer id,
-            @RequestParam String reason) {
+            @PathVariable("id") Integer id,
+            @RequestParam("reason") String reason) {
         try {
             log.info("Rejecting booking id: {} with reason: {}", id, reason);
             
@@ -257,7 +266,7 @@ public class BookingController {
      */
     @PreAuthorize("hasAuthority('CAR_OWNER') or hasAuthority('ADMIN')")
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<Booking>> approveBooking(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Booking>> approveBooking(@PathVariable("id") Integer id) {
         try {
             log.info("Approving booking id: {}", id);
             
@@ -286,7 +295,7 @@ public class BookingController {
      * PATCH /api/bookings/{id}/activate
      */
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<ApiResponse<Booking>> activateBooking(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Booking>> activateBooking(@PathVariable("id") Integer id) {
         try {
             log.info("Activating booking id: {}", id);
             
@@ -315,7 +324,7 @@ public class BookingController {
      * DELETE /api/bookings/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteBooking(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteBooking(@PathVariable("id") Integer id) {
         try {
             log.info("Deleting booking with id: {}", id);
             

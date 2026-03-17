@@ -35,7 +35,7 @@ public class PaymentMethodController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PaymentMethod>> getPaymentMethodById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<PaymentMethod>> getPaymentMethodById(@PathVariable("id") Integer id) {
         try {
             Optional<PaymentMethod> method = paymentMethodService.getPaymentMethodById(id);
             return method.map(m -> ResponseEntity.ok(ApiResponse.success("Payment method retrieved", m)))
@@ -49,7 +49,7 @@ public class PaymentMethodController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<PaymentMethod>>> getPaymentMethodsByUserId(@PathVariable Integer userId) {
+    public ResponseEntity<ApiResponse<List<PaymentMethod>>> getPaymentMethodsByUserId(@PathVariable("userId") Integer userId) {
         try {
             List<PaymentMethod> methods = paymentMethodService.getPaymentMethodsByUserId(userId);
             return ResponseEntity.ok(ApiResponse.success("Payment methods retrieved", methods));
@@ -61,7 +61,7 @@ public class PaymentMethodController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PaymentMethod>> updatePaymentMethod(@PathVariable Integer id,
+    public ResponseEntity<ApiResponse<PaymentMethod>> updatePaymentMethod(@PathVariable("id") Integer id,
             @RequestBody PaymentMethod paymentMethod) {
         try {
             paymentMethod.setId(id);
@@ -75,7 +75,7 @@ public class PaymentMethodController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deletePaymentMethod(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deletePaymentMethod(@PathVariable("id") Integer id) {
         try {
             paymentMethodService.deletePaymentMethod(id);
             return ResponseEntity.ok(ApiResponse.success("Payment method deleted successfully", null));

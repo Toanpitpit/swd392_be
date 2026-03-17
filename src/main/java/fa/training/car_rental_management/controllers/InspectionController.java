@@ -76,7 +76,7 @@ public class InspectionController {
      * GET /api/inspections/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching inspection with id: {}", id);
             
@@ -100,7 +100,7 @@ public class InspectionController {
      * GET /api/inspections/booking/{bookingId}
      */
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             log.info("Fetching inspections for booking: {}", bookingId);
             
@@ -120,7 +120,7 @@ public class InspectionController {
      * GET /api/inspections/inspector/{inspectorId}
      */
     @GetMapping("/inspector/{inspectorId}")
-    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByInspectorId(@PathVariable Integer inspectorId) {
+    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByInspectorId(@PathVariable("inspectorId") Integer inspectorId) {
         try {
             log.info("Fetching inspections by inspector: {}", inspectorId);
             
@@ -140,7 +140,7 @@ public class InspectionController {
      * GET /api/inspections/type/{type}
      */
     @GetMapping("/type/{type}")
-    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByType(@PathVariable InspectionType type) {
+    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByType(@PathVariable("type") InspectionType type) {
         try {
             log.info("Fetching {} inspections", type);
             
@@ -181,10 +181,10 @@ public class InspectionController {
      */
     @PostMapping("/return")
     public ResponseEntity<ApiResponse<Inspection>> createReturnInspection(
-            @RequestParam Integer bookingId,
-            @RequestParam Integer inspectorId,
-            @RequestParam CarStatus carStatus,
-            @RequestParam(required = false) String comments) {
+            @RequestParam("bookingId") Integer bookingId,
+            @RequestParam("inspectorId") Integer inspectorId,
+            @RequestParam("carStatus") CarStatus carStatus,
+            @RequestParam(name = "comments", required = false) String comments) {
         try {
             log.info("Creating return inspection for booking: {}", bookingId);
             
@@ -214,7 +214,7 @@ public class InspectionController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Inspection>> updateInspection(
-            @PathVariable Integer id,
+            @PathVariable("id") Integer id,
             @RequestBody Inspection inspection) {
         try {
             log.info("Updating inspection with id: {}", id);
@@ -243,7 +243,7 @@ public class InspectionController {
      * DELETE /api/inspections/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteInspection(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteInspection(@PathVariable("id") Integer id) {
         try {
             log.info("Deleting inspection with id: {}", id);
             

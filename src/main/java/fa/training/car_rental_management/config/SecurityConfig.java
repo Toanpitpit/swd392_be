@@ -54,6 +54,15 @@ public class SecurityConfig {
                 // CSRF Disabled (vì stateless)
                 .csrf(csrf -> csrf.disable())
 
+                // Disable default login/httpBasic and handle 401
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        })
+                )
+
                 // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - không cần authentication

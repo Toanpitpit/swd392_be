@@ -50,7 +50,7 @@ public class PaymentController {
      * GET /api/payments/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Payment>> getPaymentById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Payment>> getPaymentById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching payment with id: {}", id);
             
@@ -74,7 +74,7 @@ public class PaymentController {
      * GET /api/payments/booking/{bookingId}
      */
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             log.info("Fetching payments for booking: {}", bookingId);
             
@@ -94,7 +94,7 @@ public class PaymentController {
      * GET /api/payments/payer/{payerId}
      */
     @GetMapping("/payer/{payerId}")
-    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByPayerId(@PathVariable Integer payerId) {
+    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByPayerId(@PathVariable("payerId") Integer payerId) {
         try {
             log.info("Fetching payments by payer: {}", payerId);
             
@@ -114,7 +114,7 @@ public class PaymentController {
      * GET /api/payments/status/{status}
      */
     @GetMapping("/status/{status}")
-    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByStatus(@PathVariable PaymentStatus status) {
+    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentsByStatus(@PathVariable("status") PaymentStatus status) {
         try {
             log.info("Fetching payments with status: {}", status);
             
@@ -155,9 +155,9 @@ public class PaymentController {
      */
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<Payment>> processSecurityDeposit(
-            @RequestParam Integer bookingId,
-            @RequestParam Integer payerId,
-            @RequestParam Double amount) {
+            @RequestParam("bookingId") Integer bookingId,
+            @RequestParam("payerId") Integer payerId,
+            @RequestParam("amount") Double amount) {
         try {
             log.info("Processing security deposit for booking: {}", bookingId);
             
@@ -185,7 +185,7 @@ public class PaymentController {
      * PATCH /api/payments/{id}/complete
      */
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<ApiResponse<Payment>> completePayment(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Payment>> completePayment(@PathVariable("id") Integer id) {
         try {
             log.info("Marking payment as completed: {}", id);
             
@@ -214,7 +214,7 @@ public class PaymentController {
      * PATCH /api/payments/{id}/fail
      */
     @PatchMapping("/{id}/fail")
-    public ResponseEntity<ApiResponse<Payment>> failPayment(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Payment>> failPayment(@PathVariable("id") Integer id) {
         try {
             log.info("Marking payment as failed: {}", id);
             
@@ -244,7 +244,7 @@ public class PaymentController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Payment>> updatePayment(
-            @PathVariable Integer id,
+            @PathVariable("id") Integer id,
             @RequestBody Payment payment) {
         try {
             log.info("Updating payment with id: {}", id);
@@ -273,7 +273,7 @@ public class PaymentController {
      * DELETE /api/payments/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deletePayment(@PathVariable("id") Integer id) {
         try {
             log.info("Deleting payment with id: {}", id);
             
