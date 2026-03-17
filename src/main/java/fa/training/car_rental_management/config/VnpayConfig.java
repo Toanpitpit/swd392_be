@@ -34,7 +34,7 @@ public class VnpayConfig {
     @Value("${payment.vnPay.orderType}")
     private String orderType;
 
-    public Map<String, String> getVNPayConfig() {
+    public Map<String, String> getVNPayConfig(String txnRef) {
 
         Map<String, String> vnpParamsMap = new HashMap<>();
 
@@ -44,12 +44,13 @@ public class VnpayConfig {
         vnpParamsMap.put("vnp_CurrCode", "VND");
 
         // transaction id
-        vnpParamsMap.put("vnp_TxnRef", String.valueOf(System.currentTimeMillis()));
+        vnpParamsMap.put("vnp_TxnRef", txnRef);
 
         // order info
-        vnpParamsMap.put("vnp_OrderInfo", "PaymentOrder" + VnPayUtil.getRandomNumber(6));
+        vnpParamsMap.put("vnp_OrderInfo", "PaymentOrder" + txnRef);
 
         vnpParamsMap.put("vnp_OrderType", orderType);
+
         vnpParamsMap.put("vnp_Locale", "vn");
 
         // return url
