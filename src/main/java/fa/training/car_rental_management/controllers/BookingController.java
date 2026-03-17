@@ -217,8 +217,8 @@ public class BookingController {
             log.info("Rejecting booking id: {} with reason: {}", id, reason);
             String token = authHeader.replace("Bearer ", "").trim();
             Optional<Integer> onwerId = jwtService.extractId(token);
-            bookingService.rejectBooking(id, reason, onwerId.get());
-            return ResponseEntity.ok(ApiResponse.success("successfully reject booking", null));
+            Booking booking =  bookingService.rejectBooking(id, reason, onwerId.get());
+            return ResponseEntity.ok(ApiResponse.success("successfully reject booking", booking));
 
         } catch (Exception e) {
             log.error("Error rejecting booking", e);
@@ -236,8 +236,8 @@ public class BookingController {
             log.info("Approving booking id: {}", id);
             String token = authHeader.replace("Bearer ", "").trim();
             Optional<Integer> onwerId = jwtService.extractId(token);
-            bookingService.approveBooking(id, onwerId.get());
-            return ResponseEntity.ok(ApiResponse.success("successfully approved booking", null));
+            Booking booking = bookingService.approveBooking(id, onwerId.get());
+            return ResponseEntity.ok(ApiResponse.success("successfully approved booking", booking));
         } catch (Exception e) {
             log.error("Error approving booking", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

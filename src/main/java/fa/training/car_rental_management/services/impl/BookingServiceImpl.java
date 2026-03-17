@@ -229,7 +229,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    public void approveBooking(Integer bookingId,Integer carOnnerId) {
+    public Booking approveBooking(Integer bookingId,Integer carOnnerId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -250,6 +250,7 @@ public class BookingServiceImpl implements BookingService {
             log.info("Booking approved - ID: {}, Customer: {}", bookingId, customer.getEmail());
 
             sendBookingSuccessEmails(booking);
+            return  booking;
 
         } catch (Exception e) {
             log.error("Error approving booking: {}", e.getMessage(), e);
@@ -261,7 +262,7 @@ public class BookingServiceImpl implements BookingService {
      * Reject booking
      * Gửi email thông báo từ chối cho customer
      */
-    public void rejectBooking(Integer bookingId, String rejectionReason,Integer carOnnerId) {
+    public Booking rejectBooking(Integer bookingId, String rejectionReason,Integer carOnnerId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -281,7 +282,7 @@ public class BookingServiceImpl implements BookingService {
             sendBookingRejectedEmail(booking, rejectionReason);
 
             log.info("Booking rejected - ID: {}, Reason: {}", bookingId, rejectionReason);
-
+            return booking;
 
         } catch (Exception e) {
             log.error("Error rejecting booking: {}", e.getMessage(), e);
