@@ -9,6 +9,7 @@ import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.enums.PaymentStatus;
 import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.enums.VehicleStatus;
+import fa.training.car_rental_management.exception.ResourceNotFoundException;
 import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.PaymentRepository;
 import fa.training.car_rental_management.repository.UserRepository;
@@ -227,13 +228,8 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.deleteById(id);
     }
 
-    // ==================== Email Notification Methods ====================
 
-    /**
-     * Approve booking - admin chấp nhận booking
-     * Gửi email xác nhận cho customer
-     */
-    public void approveBooking(Integer bookingId, String adminMessage, String adminBannerBase64) {
+    public void approveBooking(Integer bookingId,Integer carOnnerId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -244,15 +240,16 @@ public class BookingServiceImpl implements BookingService {
             Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
                     .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-            booking.setStatus(BookingStatus.APPROVED);
+            if(carOnnerId != booking.getVehicle().getOwner().getId()) {
+                throw new RuntimeException("You are not the owner of this vehicle");
+            }
+
+            booking.setStatus(BookingStatus.AWAITING_PAYMENT);
             bookingRepository.save(booking);
 
             log.info("Booking approved - ID: {}, Customer: {}", bookingId, customer.getEmail());
 
-            String startTime = booking.getStartTime().format(DATE_FORMATTER);
-            String endTime = booking.getEndTime().format(DATE_FORMATTER);
-
-
+            sendBookingSuccessEmails(booking);
 
         } catch (Exception e) {
             log.error("Error approving booking: {}", e.getMessage(), e);
@@ -261,10 +258,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * Reject booking - admin từ chối booking
+     * Reject booking
      * Gửi email thông báo từ chối cho customer
      */
-    public void rejectBooking(Integer bookingId, String rejectionReason, String adminMessage, String adminBannerBase64) {
+    public void rejectBooking(Integer bookingId, String rejectionReason,Integer carOnnerId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -275,8 +272,13 @@ public class BookingServiceImpl implements BookingService {
             Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
                     .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
+            if(carOnnerId != booking.getVehicle().getOwner().getId()) {
+                throw new RuntimeException("You are not the owner of this vehicle");
+            }
+
             booking.setStatus(BookingStatus.REJECTED);
             bookingRepository.save(booking);
+            sendBookingRejectedEmail(booking, rejectionReason);
 
             log.info("Booking rejected - ID: {}, Reason: {}", bookingId, rejectionReason);
 
@@ -287,11 +289,8 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    /**
-     * Complete booking - hoàn thành booking (xe được trả)
-     * Gửi email thông báo return xe với refund status
-     */
-    public void completeBooking(Integer bookingId, String refundStatus, String adminMessage, String adminBannerBase64) {
+
+    public void completeBooking(Integer bookingId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -309,50 +308,43 @@ public class BookingServiceImpl implements BookingService {
 
             String returnDateTime = LocalDateTime.now().format(DATE_FORMATTER);
 
-            // call thêm để lấy price từ payment
-            Double depositAmount = 10.0;
-
-
-
         } catch (Exception e) {
             log.error("Error completing booking: {}", e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    /**
-     * Send generic custom notification to customer
-     */
-
-    public void sendCustomNotification(
-            Integer bookingId,
-            String subject,
-            String title,
-            String message,
-            String htmlContent,
-            String bannerBase64,
-            String actionUrl,
-            String actionButtonText) {
-
+    private void sendBookingRejectedEmail(Booking booking, String reason) {
         try {
-            Booking booking = bookingRepository.findById(bookingId)
-                    .orElseThrow(() -> new RuntimeException("Booking not found"));
+            Vehicle vehicle = booking.getVehicle();
+            Users customer = booking.getCustomer();
 
-            Users customer = userRepository.findById(booking.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("Customer not found"));
+            Map<String, Object> vars = new HashMap<>();
+            vars.put("bookingId", booking.getId());
+            vars.put("vehicleName", vehicle.getMake() + " " + vehicle.getModel());
+            vars.put("receiverName", customer.getName());
+            vars.put("startTime", booking.getStartTime().format(DATE_FORMATTER));
+            vars.put("endTime", booking.getEndTime().format(DATE_FORMATTER));
 
+            vars.put("rejectReason", (reason != null && !reason.isEmpty()) ? reason : "Không phù hợp với lịch trình hiện tại của xe.");
 
-            log.info("Custom notification sent to: {}", customer.getEmail());
+            vars.put("actionUrl", frontendUrl);
+
+            notificationEmailService.sendEmailWithTemplate(
+                    customer,
+                    "Booking Rejected - #" + booking.getId(),
+                    "booking-rejected",
+                    vars
+            );
+
+            log.info("Booking rejected email sent to customer: {} for Booking ID: {}", customer.getEmail(), booking.getId());
 
         } catch (Exception e) {
-            log.error("Error sending custom notification: {}", e.getMessage(), e);
-            throw new RuntimeException(e.getMessage());
+            log.error("Error sending booking rejected email: {}", e.getMessage(), e);
         }
     }
 
-    /**
-     * Send new booking request email to car owner
-     */
+
     private void sendNewBookingRequestEmailToOwner(
             Vehicle vehicle,
             Users customer,
@@ -366,22 +358,17 @@ public class BookingServiceImpl implements BookingService {
                 return;
             }
 
-            // Calculate total days
             long totalDays = java.time.temporal.ChronoUnit.DAYS.between(
                 bookingDTO.getStartTime().toLocalDate(),
                 bookingDTO.getEndTime().toLocalDate()
             );
 
-            // Calculate estimated amount
             Double dailyRate = vehicle.getBasePrice() != null ? vehicle.getBasePrice() : 0.0;
             Double estimatedAmount = dailyRate * (totalDays + 1);
 
-            // Format times
             String startTime = bookingDTO.getStartTime().format(DATE_FORMATTER);
             String endTime = bookingDTO.getEndTime().format(DATE_FORMATTER);
 
-            // Build template variables
-            // 1. Khởi tạo Map
             Map<String, Object> vars = new HashMap<>();
 
             vars.put("bookingId", savedBooking.getId());
@@ -407,6 +394,61 @@ public class BookingServiceImpl implements BookingService {
 
         } catch (Exception e) {
             log.error("Error sending new booking request email to owner: {}", e.getMessage(), e);
+        }
+    }
+
+
+    private void sendBookingSuccessEmails(Booking booking) {
+        try {
+            Vehicle vehicle = booking.getVehicle();
+            Users customer = booking.getCustomer();
+            Users owner = vehicle.getOwner();
+
+            Payment rentalFare = paymentRepository.findByBookingIdAndType(booking.getId(), PaymentType.RENTAL_FARE)
+                    .filter(p -> p.getStatus() == PaymentStatus.PENDING)
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment RENTAL_FARE not found or not in PENDING status for booking: " + booking.getId()));
+
+            Payment deposit = paymentRepository.findByBookingIdAndType(booking.getId(), PaymentType.SECURITY_DEPOSIT)
+                    .filter(p -> p.getStatus() == PaymentStatus.PENDING)
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment SECURITY_DEPOSIT not found or not in PENDING status for booking: " + booking.getId()));
+            double totalAmount = rentalFare.getAmount() + deposit.getAmount();
+
+            Map<String, Object> vars = new HashMap<>();
+            vars.put("bookingId", booking.getId());
+            vars.put("vehicleName", vehicle.getMake() + " " + vehicle.getModel());
+            vars.put("startTime", booking.getStartTime().format(DATE_FORMATTER));
+            vars.put("endTime", booking.getEndTime().format(DATE_FORMATTER));
+            vars.put("totalAmount", totalAmount);
+            vars.put("paymentDate", java.time.LocalDateTime.now().format(DATE_FORMATTER));
+
+            vars.put("receiverName", customer.getName());
+            vars.put("message", "Thanh toán của bạn đã thành công. Xe đã được giữ chỗ cho chuyến đi của bạn.");
+            vars.put("actionUrl", frontendUrl + "/my-bookings/" + booking.getId());
+
+            notificationEmailService.sendEmailWithTemplate(
+                    customer,
+                    "Payment Successful - Booking #" + booking.getId(),
+                    "booking-payment-success",
+                    vars
+            );
+
+            if (owner != null) {
+                vars.put("receiverName", owner.getName());
+                vars.put("message", "Khách hàng đã thanh toán thành công cho yêu cầu đặt xe của bạn. Vui lòng chuẩn bị xe để bàn giao.");
+                vars.put("actionUrl", frontendUrl + "/owner/bookings/" + booking.getId());
+
+                notificationEmailService.sendEmailWithTemplate(
+                        owner,
+                        "Booking Confirmed & Paid - " + vehicle.getModel(),
+                        "booking-payment-success",
+                        vars
+                );
+            }
+
+            log.info("Booking success emails sent for Booking ID: {}", booking.getId());
+
+        } catch (Exception e) {
+            log.error("Error sending booking success emails: {}", e.getMessage(), e);
         }
     }
 }
