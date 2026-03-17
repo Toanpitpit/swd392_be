@@ -334,7 +334,7 @@ public class BookingController {
             
             if (existingBooking.isPresent()) {
                 Booking booking = existingBooking.get();
-                booking.setStatus(BookingStatus.APPROVED);
+                booking.setStatus(BookingStatus.AWAITING_PAYMENT);
                 Booking updatedBooking = bookingService.updateBooking(booking);
                 
                 BookingResponse response = BookingResponse.builder()
