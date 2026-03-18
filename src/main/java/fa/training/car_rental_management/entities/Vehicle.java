@@ -1,5 +1,6 @@
 package fa.training.car_rental_management.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import fa.training.car_rental_management.enums.FuelType;
 import fa.training.car_rental_management.enums.TransmissionType;
 import fa.training.car_rental_management.enums.VehicleStatus;
@@ -64,10 +65,12 @@ public class Vehicle {
     private Double basePrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "owner_id", insertable = false, updatable = false)
     private Users owner;
 
     @OneToOne(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Address address;
 }
 

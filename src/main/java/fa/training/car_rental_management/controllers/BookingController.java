@@ -209,7 +209,7 @@ public class BookingController {
 
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PatchMapping("/{id}/reject")
-    public ResponseEntity<ApiResponse<Booking>> rejectBooking(
+    public ApiResponse<BookingResponse> rejectBooking(
             @PathVariable Integer id,
             @RequestHeader("Authorization") String authHeader,
             @RequestParam String reason) {
@@ -217,31 +217,28 @@ public class BookingController {
             log.info("Rejecting booking id: {} with reason: {}", id, reason);
             String token = authHeader.replace("Bearer ", "").trim();
             Optional<Integer> onwerId = jwtService.extractId(token);
-            Booking booking =  bookingService.rejectBooking(id, reason, onwerId.get());
-            return ResponseEntity.ok(ApiResponse.success("successfully reject booking", booking));
-
+            BookingResponse booking =  bookingService.rejectBooking(id, reason, onwerId.get());
+            return ApiResponse.success("successfully reject booking", booking);
         } catch (Exception e) {
             log.error("Error rejecting booking", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to reject booking: " + e.getMessage()));
+            return ApiResponse.error("Failed to reject booking: " + e.getMessage());
         }
     }
 
     @PreAuthorize("hasAuthority('CAR_OWNER')")
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<ApiResponse<Booking>> approveBooking(
+    public ApiResponse<BookingResponse> approveBooking(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer id) {
         try {
             log.info("Approving booking id: {}", id);
             String token = authHeader.replace("Bearer ", "").trim();
             Optional<Integer> onwerId = jwtService.extractId(token);
-            Booking booking = bookingService.approveBooking(id, onwerId.get());
-            return ResponseEntity.ok(ApiResponse.success("successfully approved booking", booking));
+            BookingResponse booking = bookingService.approveBooking(id, onwerId.get());
+            return ApiResponse.success("successfully approved booking", booking);
         } catch (Exception e) {
             log.error("Error approving booking", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to approve booking: " + e.getMessage()));
+            return ApiResponse.error("Failed to approve booking: " + e.getMessage());
         }
     }
 
