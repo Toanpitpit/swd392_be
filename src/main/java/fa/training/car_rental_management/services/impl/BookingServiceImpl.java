@@ -10,6 +10,7 @@ import fa.training.car_rental_management.enums.PaymentStatus;
 import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.enums.VehicleStatus;
 import fa.training.car_rental_management.exception.ResourceNotFoundException;
+import fa.training.car_rental_management.repository.AvailabilityRepository;
 import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.PaymentRepository;
 import fa.training.car_rental_management.repository.UserRepository;
@@ -48,6 +49,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
 
     @Autowired
     private BookingValidator bookingValidator;
@@ -280,6 +284,15 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(BookingStatus.REJECTED);
             bookingRepository.save(booking);
 
+            availabilityRepository.findByVehicleIdAndStartDateAndEndDate(
+                    booking.getVehicleId(),
+                    booking.getStartTime(),
+                    booking.getEndTime()
+            ).ifPresent(availability -> {
+                availabilityRepository.delete(availability);
+                log.info("Availability record deleted for rejected booking - Vehicle ID: {}, Period: {} to {}",
+                        booking.getVehicleId(), booking.getStartTime(), booking.getEndTime());
+            });
 
             sendBookingRejectedEmail(booking, rejectionReason);
 

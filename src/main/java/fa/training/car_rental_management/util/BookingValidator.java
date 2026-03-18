@@ -88,8 +88,9 @@ public class BookingValidator {
             throw new RuntimeException("Start time must be in the future");
         }
 
-        // Check end time is after start time
-        if (endTime.isBefore(startTime) || endTime.isEqual(startTime)) {
+        // Check end time không được trước start time
+        // Cho phép bằng nhau (start date = end date) và sẽ được tính là 1 ngày ở logic service
+        if (endTime.isBefore(startTime)) {
             throw new RuntimeException("End time must be after start time");
         }
 
@@ -116,9 +117,9 @@ public class BookingValidator {
 
         // Check existing availabilities for conflicts
         for (Availability availability : availabilities) {
-            // Check if booking period overlaps with availability period
-            boolean periodOverlaps = !endTime.isBefore(availability.getStartDate()) &&
-                    !startTime.isAfter(availability.getEndDate());
+            // Check if booking period overlaps with availability period (exclusive overlap)
+            boolean periodOverlaps = endTime.isAfter(availability.getStartDate()) &&
+                    startTime.isBefore(availability.getEndDate());
 
             if (periodOverlaps) {
                 // Check availability type - reject if BLOCKED, SOFT_BLOCKED, or BOOKED
@@ -206,8 +207,8 @@ public class BookingValidator {
             List<Availability> availabilities = availabilityRepository.findByVehicleId(vehicleId);
 
             for (Availability availability : availabilities) {
-                boolean periodOverlaps = !endTime.isBefore(availability.getStartDate()) &&
-                        !startTime.isAfter(availability.getEndDate());
+                boolean periodOverlaps = endTime.isAfter(availability.getStartDate()) &&
+                        startTime.isBefore(availability.getEndDate());
 
                 if (periodOverlaps) {
                     if (availability.getType() == AvailabilityType.BLOCKED || 
@@ -244,9 +245,9 @@ public class BookingValidator {
                 continue;
             }
             
-            // Check for time overlap
-            boolean timeOverlaps = !endTime.isBefore(booking.getStartTime()) &&
-                    !startTime.isAfter(booking.getEndTime());
+            // Check for time overlap (exclusive)
+            boolean timeOverlaps = endTime.isAfter(booking.getStartTime()) &&
+                    startTime.isBefore(booking.getEndTime());
             
             if (timeOverlaps) {
                 throw new RuntimeException(
@@ -291,8 +292,8 @@ public class BookingValidator {
         List<Availability> availabilities = availabilityRepository.findByVehicleId(vehicleId);
 
         for (Availability availability : availabilities) {
-            boolean periodOverlaps = !endTime.isBefore(availability.getStartDate()) &&
-                    !startTime.isAfter(availability.getEndDate());
+            boolean periodOverlaps = endTime.isAfter(availability.getStartDate()) &&
+                    startTime.isBefore(availability.getEndDate());
 
             if (periodOverlaps) {
                 return availability.getType();
