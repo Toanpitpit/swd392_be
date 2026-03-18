@@ -279,6 +279,8 @@ public class BookingServiceImpl implements BookingService {
 
             booking.setStatus(BookingStatus.REJECTED);
             bookingRepository.save(booking);
+
+
             sendBookingRejectedEmail(booking, rejectionReason);
 
             log.info("Booking rejected - ID: {}, Reason: {}", bookingId, rejectionReason);
