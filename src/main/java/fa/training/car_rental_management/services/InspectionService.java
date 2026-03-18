@@ -1,6 +1,8 @@
 package fa.training.car_rental_management.services;
 
+import fa.training.car_rental_management.dto.request.FinalizeInspectionRequest;
 import fa.training.car_rental_management.dto.request.InspectionPickupRequest;
+import fa.training.car_rental_management.dto.response.FinalizeInspectionResponse;
 import fa.training.car_rental_management.dto.response.InspectionPickupResponse;
 import fa.training.car_rental_management.entities.Inspection;
 import fa.training.car_rental_management.enums.InspectionType;
@@ -18,5 +20,6 @@ public interface InspectionService {
     Inspection updateInspection(Inspection inspection);
     void deleteInspection(Integer id);
     InspectionPickupResponse createPickupRecord(InspectionPickupRequest request, Integer inspectorId);
+    FinalizeInspectionResponse finalizeReturnInspection(FinalizeInspectionRequest request, Integer ownerId);
 }
 
