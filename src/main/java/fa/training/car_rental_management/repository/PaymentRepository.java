@@ -13,7 +13,6 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     List<Payment> findByBookingId(Integer bookingId);
-    List<Payment> findByPayerId(Integer payerId);
     List<Payment> findByStatus(PaymentStatus status);
     Payment findByBookingIdAndTypeAndStatus(
             Integer bookingId,

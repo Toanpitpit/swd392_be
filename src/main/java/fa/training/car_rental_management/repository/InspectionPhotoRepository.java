@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface InspectionPhotoRepository extends JpaRepository<InspectionPhoto, Integer> {
-    List<InspectionPhoto> findByInspectionId(Integer inspectionId);
+
 }
 

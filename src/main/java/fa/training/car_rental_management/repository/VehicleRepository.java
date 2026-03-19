@@ -12,8 +12,6 @@ import java.util.List;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer>, JpaSpecificationExecutor<Vehicle> {
-    List<Vehicle> findByOwnerId(Integer ownerId);
-    
     List<Vehicle> findByStatus(VehicleStatus status);
     
     Page<Vehicle> findByStatus(VehicleStatus status, Pageable pageable);

@@ -20,17 +20,17 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @Override
-    public Payment createPayment(Payment payment) {
-        log.info("Creating payment for booking: {}", payment.getBookingId());
-        return paymentRepository.save(payment);
-    }
-
-    @Override
-    public Optional<Payment> getPaymentById(Integer id) {
-        log.info("Fetching payment with id: {}", id);
-        return paymentRepository.findById(id);
-    }
+//    @Override
+//    public Payment createPayment(Payment payment) {
+//        log.info("Creating payment for booking: {}", payment.getBookingId());
+//        return paymentRepository.save(payment);
+//    }
+//
+//    @Override
+//    public Optional<Payment> getPaymentById(Integer id) {
+//        log.info("Fetching payment with id: {}", id);
+//        return paymentRepository.findById(id);
+//    }
 
     @Override
     public List<Payment> getPaymentsByBookingId(Integer bookingId) {
@@ -38,17 +38,17 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByBookingId(bookingId);
     }
 
-    @Override
-    public List<Payment> getPaymentsByPayerId(Integer payerId) {
-        log.info("Fetching payments by payer: {}", payerId);
-        return paymentRepository.findByPayerId(payerId);
-    }
-
-    @Override
-    public List<Payment> getPaymentsByStatus(PaymentStatus status) {
-        log.info("Fetching payments with status: {}", status);
-        return paymentRepository.findByStatus(status);
-    }
+//    @Override
+//    public List<Payment> getPaymentsByPayerId(Integer payerId) {
+//        log.info("Fetching payments by payer: {}", payerId);
+//        return paymentRepository.findByPayerId(payerId);
+//    }
+//
+//    @Override
+//    public List<Payment> getPaymentsByStatus(PaymentStatus status) {
+//        log.info("Fetching payments with status: {}", status);
+//        return paymentRepository.findByStatus(status);
+//    }
 
     @Override
     public List<Payment> getAllPayments() {
@@ -56,16 +56,16 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findAll();
     }
 
-    @Override
-    public Payment updatePayment(Payment payment) {
-        log.info("Updating payment with id: {}", payment.getId());
-        return paymentRepository.save(payment);
-    }
-
-    @Override
-    public void deletePayment(Integer id) {
-        log.info("Deleting payment with id: {}", id);
-        paymentRepository.deleteById(id);
-    }
+//    @Override
+//    public Payment updatePayment(Payment payment) {
+//        log.info("Updating payment with id: {}", payment.getId());
+//        return paymentRepository.save(payment);
+//    }
+//
+//    @Override
+//    public void deletePayment(Integer id) {
+//        log.info("Deleting payment with id: {}", id);
+//        paymentRepository.deleteById(id);
+//    }
 }
 

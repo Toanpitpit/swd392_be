@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface VehicleService {
     VehicleResponseDTO getVehicleById(Integer id);
-    List<Vehicle> getVehiclesByOwnerId(Integer ownerId);
-    List<Vehicle> getVehiclesByStatus(VehicleStatus status);
-    Page<VehicleResponseDTO> getAllVehicles(Pageable pageable);
+//    List<Vehicle> getVehiclesByOwnerId(Integer ownerId);
+//    List<Vehicle> getVehiclesByStatus(VehicleStatus status);
+//    Page<VehicleResponseDTO> getAllVehicles(Pageable pageable);
 
 
     Page<VehicleResponseDTO> getAvailableVehicles(Pageable pageable, LocalDateTime startDate , LocalDateTime endDate);
