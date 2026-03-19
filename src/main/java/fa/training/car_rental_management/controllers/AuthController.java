@@ -1,7 +1,7 @@
 package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
-import fa.training.car_rental_management.dto.request.LoginRequest;
+import fa.training.car_rental_management.dto.request.LoginRequestDTO;
 import fa.training.car_rental_management.dto.response.LoginResponse;
 import fa.training.car_rental_management.util.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequestDTO request) {
         try {
             log.info("Login attempt for user: {}", request.getUsername());
 

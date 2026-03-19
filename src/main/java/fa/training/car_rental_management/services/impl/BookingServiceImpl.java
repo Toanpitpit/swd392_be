@@ -184,15 +184,6 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    @Override
-    public List<Booking> getBookingsByVehicleId(Integer vehicleId) {
-        try {
-            log.info("Fetching bookings for vehicle: {}", vehicleId);
-            return bookingRepository.findByVehicleId(vehicleId);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
 
     @Override
     public List<Booking> getBookingsByCustomerId(Integer customerId) {
@@ -228,11 +219,11 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.save(booking);
     }
 
-    @Override
-    public void deleteBooking(Integer id) {
-        log.info("Deleting booking with id: {}", id);
-        bookingRepository.deleteById(id);
-    }
+//    @Override
+//    public void deleteBooking(Integer id) {
+//        log.info("Deleting booking with id: {}", id);
+//        bookingRepository.deleteById(id);
+//    }
 
 
     public BookingResponse approveBooking(Integer bookingId,Integer carOnnerId) {

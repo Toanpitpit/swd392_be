@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InspectionService {
-    Inspection createInspection(Inspection inspection);
+//    Inspection createInspection(Inspection inspection);
     Optional<Inspection> getInspectionById(Integer id);
     List<Inspection> getInspectionsByBookingId(Integer bookingId);
     List<Inspection> getInspectionsByInspectorId(Integer inspectorId);
     List<Inspection> getInspectionsByType(InspectionType type);
     List<Inspection> getAllInspections();
-    Inspection updateInspection(Inspection inspection);
+//    Inspection updateInspection(Inspection inspection);
     void deleteInspection(Integer id);
     InspectionPickupResponse createPickupRecord(InspectionPickupRequest request, Integer inspectorId);
 }

@@ -34,11 +34,11 @@ public class InspectionServiceImpl implements InspectionService {
     private final UserRepository userRepository;
     private final InspectionPhotoRepository inspectionPhotoRepository;
 
-    @Override
-    public Inspection createInspection(Inspection inspection) {
-        log.info("Creating inspection for booking: {}", inspection.getBookingId());
-        return inspectionRecordRepository.save(inspection);
-    }
+//    @Override
+//    public Inspection createInspection(Inspection inspection) {
+//        log.info("Creating inspection for booking: {}", inspection.getBookingId());
+//        return inspectionRecordRepository.save(inspection);
+//    }
 
     @Override
     public Optional<Inspection> getInspectionById(Integer id) {
@@ -70,11 +70,11 @@ public class InspectionServiceImpl implements InspectionService {
         return inspectionRecordRepository.findAll();
     }
 
-    @Override
-    public Inspection updateInspection(Inspection inspection) {
-        log.info("Updating inspection with id: {}", inspection.getId());
-        return inspectionRecordRepository.save(inspection);
-    }
+//    @Override
+//    public Inspection updateInspection(Inspection inspection) {
+//        log.info("Updating inspection with id: {}", inspection.getId());
+//        return inspectionRecordRepository.save(inspection);
+//    }
 
     @Override
     public void deleteInspection(Integer id) {
