@@ -167,6 +167,14 @@ public class PaymentVnpayService {
                         .orElseThrow(() -> new ResourceNotFoundException("Payment not found for type: " + type + " and booking: " + bookingId));
                 payment.setStatus(PaymentStatus.COMPLETED);
                 paymentRepository.save(payment);
+
+                // Finalize booking if this is a post-inspection payment
+                Booking booking = bookingRepository.findById(bookingId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+                if (booking.getStatus() == fa.training.car_rental_management.enums.BookingStatus.UNDER_INSPECTION) {
+                    booking.setStatus(fa.training.car_rental_management.enums.BookingStatus.COMPLETED);
+                    bookingRepository.save(booking);
+                }
             }
 
             return PaymentVnpayResponse.builder()

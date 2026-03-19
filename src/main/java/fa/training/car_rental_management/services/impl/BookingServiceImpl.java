@@ -1,12 +1,16 @@
 package fa.training.car_rental_management.services.impl;
 
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+
 import fa.training.car_rental_management.dto.request.ConfirmReturnRequest;
 import fa.training.car_rental_management.dto.response.BookingResponse;
 import fa.training.car_rental_management.dto.response.WaitingReturnResponse;
 import fa.training.car_rental_management.entities.*;
 import fa.training.car_rental_management.enums.*;
 import fa.training.car_rental_management.repository.*;
+import fa.training.car_rental_management.dto.response.BookingResponse;
+import fa.training.car_rental_management.entities.Availability;
+
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.entities.Payment;
 import fa.training.car_rental_management.entities.Vehicle;
@@ -16,6 +20,7 @@ import fa.training.car_rental_management.enums.PaymentStatus;
 import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.enums.VehicleStatus;
 import fa.training.car_rental_management.exception.ResourceNotFoundException;
+import fa.training.car_rental_management.repository.AvailabilityRepository;
 import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.PaymentRepository;
 import fa.training.car_rental_management.repository.UserRepository;
@@ -62,6 +67,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private AvailabilityRepository availabilityRepository;
 
     @Autowired
     private BookingValidator bookingValidator;
@@ -243,7 +251,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    public Booking approveBooking(Integer bookingId,Integer carOnnerId) {
+    public BookingResponse approveBooking(Integer bookingId,Integer carOnnerId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
@@ -264,7 +272,14 @@ public class BookingServiceImpl implements BookingService {
             log.info("Booking approved - ID: {}, Customer: {}", bookingId, customer.getEmail());
 
             sendBookingSuccessEmails(booking);
-            return  booking;
+            return BookingResponse.builder()
+                    .id(booking.getId())
+                    .vehicleId(booking.getVehicleId())
+                    .customerId(booking.getCustomerId())
+                    .startTime(booking.getStartTime().toString())
+                    .endTime(booking.getEndTime().toString())
+                    .status(booking.getStatus().toString())
+                    .build();
 
         } catch (Exception e) {
             log.error("Error approving booking: {}", e.getMessage(), e);
@@ -276,8 +291,10 @@ public class BookingServiceImpl implements BookingService {
      * Reject booking
      * Gửi email thông báo từ chối cho customer
      */
-    public Booking rejectBooking(Integer bookingId, String rejectionReason,Integer carOnnerId) {
+    @Transactional
+    public BookingResponse rejectBooking(Integer bookingId, String rejectionReason, Integer carOwnerId) {
         try {
+
             Booking booking = bookingRepository.findById(bookingId)
                     .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
 
@@ -287,24 +304,40 @@ public class BookingServiceImpl implements BookingService {
             Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
                     .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-            if(carOnnerId != booking.getVehicle().getOwner().getId()) {
+            if (!carOwnerId.equals(booking.getVehicle().getOwner().getId())) {
                 throw new RuntimeException("You are not the owner of this vehicle");
             }
 
             booking.setStatus(BookingStatus.REJECTED);
             bookingRepository.save(booking);
+
+            List<Availability> availabilities = availabilityRepository.findAllByVehicleIdAndStartDateAndEndDate(
+                    booking.getVehicleId(),
+                    booking.getStartTime(),
+                    booking.getEndTime()
+            );
+
+            if (!availabilities.isEmpty()) {
+                availabilityRepository.deleteAll(availabilities);
+                log.info("Deleted {} availability records for Booking ID: {}", availabilities.size(), bookingId);
+            }
+
             sendBookingRejectedEmail(booking, rejectionReason);
 
-            log.info("Booking rejected - ID: {}, Reason: {}", bookingId, rejectionReason);
-            return booking;
+            return BookingResponse.builder()
+                    .id(booking.getId())
+                    .vehicleId(booking.getVehicleId())
+                    .customerId(booking.getCustomerId())
+                    .startTime(booking.getStartTime().toString())
+                    .endTime(booking.getEndTime().toString())
+                    .status(booking.getStatus().toString())
+                    .build();
 
         } catch (Exception e) {
-            log.error("Error rejecting booking: {}", e.getMessage(), e);
+            log.error("Error rejecting booking: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
-
-
     public void completeBooking(Integer bookingId) {
         try {
             Booking booking = bookingRepository.findById(bookingId)
@@ -320,7 +353,6 @@ public class BookingServiceImpl implements BookingService {
             bookingRepository.save(booking);
 
             log.info("Booking completed - ID: {}", bookingId);
-
             String returnDateTime = LocalDateTime.now().format(DATE_FORMATTER);
 
         } catch (Exception e) {

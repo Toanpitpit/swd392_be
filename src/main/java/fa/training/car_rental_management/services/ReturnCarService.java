@@ -7,5 +7,4 @@ import java.util.List;
 
 public interface ReturnCarService {
     List<String> returnCar(Integer bookingId, ReturnCarRequest request);
-
 }
