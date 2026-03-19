@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FinalizeInspectionRequest {
     private Integer bookingId;
-    private String carStatus;
     private String comments;
     private Double fineAmount;
 }
