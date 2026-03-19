@@ -26,11 +26,15 @@ public class VnpayController {
     public ResponseEntity<PaymentVnpayResponse> pay(
             HttpServletRequest request,
             @RequestBody @Valid PaymentRequest dto) {
+
         String ipAddress = VnPayUtil.getIpAddress(request);
 
-        PaymentVnpayResponse response = paymentService.createVnPayPayment( dto ,ipAddress );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                paymentService.createVnPayPayment(dto, ipAddress)
+        );
     }
+
+
 
     @GetMapping("/vn-pay-callback")
     public ResponseEntity<Void> payCallbackHandler(HttpServletRequest request) {

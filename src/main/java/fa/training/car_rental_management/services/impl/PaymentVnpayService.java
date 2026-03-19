@@ -67,7 +67,7 @@ public class PaymentVnpayService {
 
             Payment payment = paymentRepository.findByBookingIdAndType(booking.getId(), type)
                     .orElseThrow(() -> new ResourceNotFoundException("Payment record not found for type: " + type + " and booking: " + booking.getId()));
-            
+
             amount = (long) (payment.getAmount() * 100);
         }
 
@@ -92,7 +92,6 @@ public class PaymentVnpayService {
 
             String fieldName = itr.next();
             String fieldValue = vnpParams.get(fieldName);
-
             if (fieldValue != null && fieldValue.length() > 0) {
 
                 String encodedName = URLEncoder.encode(fieldName, StandardCharsets.US_ASCII);
@@ -124,7 +123,6 @@ public class PaymentVnpayService {
                 .paymentUrl(paymentUrl)
                 .build();
     }
-
     @Transactional
     public PaymentVnpayResponse processCallback(HttpServletRequest request) {
         String status = request.getParameter("vnp_ResponseCode");
@@ -169,6 +167,14 @@ public class PaymentVnpayService {
                         .orElseThrow(() -> new ResourceNotFoundException("Payment not found for type: " + type + " and booking: " + bookingId));
                 payment.setStatus(PaymentStatus.COMPLETED);
                 paymentRepository.save(payment);
+
+                // Finalize booking if this is a post-inspection payment
+                Booking booking = bookingRepository.findById(bookingId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+                if (booking.getStatus() == fa.training.car_rental_management.enums.BookingStatus.UNDER_INSPECTION) {
+                    booking.setStatus(fa.training.car_rental_management.enums.BookingStatus.COMPLETED);
+                    bookingRepository.save(booking);
+                }
             }
 
             return PaymentVnpayResponse.builder()

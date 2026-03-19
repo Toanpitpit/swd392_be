@@ -1,7 +1,9 @@
 package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
+import fa.training.car_rental_management.dto.request.FinalizeInspectionRequest;
 import fa.training.car_rental_management.dto.request.InspectionPickupRequest;
+import fa.training.car_rental_management.dto.response.FinalizeInspectionResponse;
 import fa.training.car_rental_management.dto.response.InspectionPickupResponse;
 import fa.training.car_rental_management.entities.Inspection;
 import fa.training.car_rental_management.enums.CarStatus;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -48,6 +51,27 @@ public class InspectionController {
             log.error("Error creating pickup record: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error("Failed to create pickup record: " + e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
+    @PostMapping("/finalize-return")
+    public ResponseEntity<ApiResponse<FinalizeInspectionResponse>> finalizeReturnInspection(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody FinalizeInspectionRequest request) {
+        log.info("Received request to finalize return inspection for booking: {}", request.getBookingId());
+        try {
+            String token = authHeader.substring(7);
+            Integer ownerId = jwtService.extractId(token)
+                    .orElseThrow(() -> new RuntimeException("Invalid token: ownerId not found"));
+
+            FinalizeInspectionResponse response = inspectionService.finalizeReturnInspection(request, ownerId);
+
+            return ResponseEntity.ok(ApiResponse.success("Return inspection finalized successfully", response));
+        } catch (Exception e) {
+            log.error("Error finalizing return inspection: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Failed to finalize return inspection: " + e.getMessage()));
         }
     }
 

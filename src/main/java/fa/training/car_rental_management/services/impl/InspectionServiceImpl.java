@@ -1,17 +1,24 @@
 package fa.training.car_rental_management.services.impl;
 
+import fa.training.car_rental_management.dto.request.FinalizeInspectionRequest;
 import fa.training.car_rental_management.dto.request.InspectionPickupRequest;
+import fa.training.car_rental_management.dto.response.FinalizeInspectionResponse;
 import fa.training.car_rental_management.dto.response.InspectionPickupResponse;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.entities.Inspection;
 import fa.training.car_rental_management.entities.InspectionPhoto;
+import fa.training.car_rental_management.entities.Payment;
 import fa.training.car_rental_management.entities.Users;
 import fa.training.car_rental_management.enums.BookingStatus;
+import fa.training.car_rental_management.enums.CarStatus;
 import fa.training.car_rental_management.enums.InspectionType;
+import fa.training.car_rental_management.enums.PaymentStatus;
+import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.exception.ResourceNotFoundException;
 import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.InspectionPhotoRepository;
 import fa.training.car_rental_management.repository.InspectionRepository;
+import fa.training.car_rental_management.repository.PaymentRepository;
 import fa.training.car_rental_management.repository.UserRepository;
 import fa.training.car_rental_management.services.InspectionService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +40,7 @@ public class InspectionServiceImpl implements InspectionService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final InspectionPhotoRepository inspectionPhotoRepository;
+    private final PaymentRepository paymentRepository;
 
 //    @Override
 //    public Inspection createInspection(Inspection inspection) {
@@ -133,5 +141,96 @@ public class InspectionServiceImpl implements InspectionService {
                 .photoKeyPaths(photoPaths)
                 .build();
     }
+
+    @Override
+    @Transactional
+    public FinalizeInspectionResponse finalizeReturnInspection(FinalizeInspectionRequest request, Integer ownerId) {
+        log.info("Finalizing return inspection for bookingId: {} by ownerId: {}", request.getBookingId(), ownerId);
+
+        Booking booking = bookingRepository.findById(request.getBookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + request.getBookingId()));
+
+        if (booking.getStatus() != BookingStatus.UNDER_INSPECTION) {
+            throw new RuntimeException("Booking is not in UNDER_INSPECTION status. Current status: " + booking.getStatus());
+        }
+
+        // Validate the caller is the vehicle owner
+        Integer vehicleOwnerId = booking.getVehicle().getOwner().getId();
+        if (!vehicleOwnerId.equals(ownerId)) {
+            throw new RuntimeException("You are not the owner of this vehicle");
+        }
+
+        // Update the existing RETURN inspection record
+        List<Inspection> inspections = inspectionRecordRepository.findByBookingId(booking.getId());
+        Inspection returnInspection = inspections.stream()
+                .filter(i -> i.getType() == InspectionType.RETURN)
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Return inspection record not found for booking: " + booking.getId()));
+
+        returnInspection.setComments(request.getComments());
+        returnInspection.setDate(LocalDateTime.now());
+        inspectionRecordRepository.save(returnInspection);
+
+        Double fineAmount = request.getFineAmount() != null ? request.getFineAmount() : 0.0;
+        Double requiredPaymentAmount = 0.0;
+
+        if (fineAmount > 0) {
+            // Find security deposit to subtract from the fine
+            Optional<Payment> depositOpt = paymentRepository.findByBookingIdAndType(booking.getId(), PaymentType.SECURITY_DEPOSIT);
+            Double depositAmount = depositOpt.map(Payment::getAmount).orElse(0.0);
+            
+            requiredPaymentAmount = fineAmount - depositAmount;
+
+            if (requiredPaymentAmount > 0) {
+                // Check if a PENDING FINE payment already exists
+                List<Payment> existingPayments = paymentRepository.findByBookingId(booking.getId());
+                Optional<Payment> existingPendingFine = existingPayments.stream()
+                        .filter(p -> p.getType() == PaymentType.FINE && p.getStatus() == PaymentStatus.PENDING)
+                        .findFirst();
+
+                if (existingPendingFine.isPresent()) {
+                    Payment p = existingPendingFine.get();
+                    p.setAmount(requiredPaymentAmount);
+                    paymentRepository.save(p);
+                    log.info("Updated existing PENDING FINE payment - Booking ID: {}, New Amount: {}", booking.getId(), requiredPaymentAmount);
+                } else {
+                    // Create a new FINE payment record for the remaining amount
+                    Payment finePayment = new Payment();
+                    finePayment.setBookingId(booking.getId());
+                    finePayment.setPayerId(booking.getCustomerId());
+                    finePayment.setType(PaymentType.FINE);
+                    finePayment.setAmount(requiredPaymentAmount);
+                    finePayment.setStatus(PaymentStatus.PENDING);
+                    paymentRepository.save(finePayment);
+                    log.info("FINE payment created - Booking ID: {}, Remaining Amount: {}", booking.getId(), requiredPaymentAmount);
+                }
+            }
+        }
+
+        if (requiredPaymentAmount <= 0) {
+            // No extra fines or deposit fully covers the fine — complete the booking immediately
+            booking.setStatus(BookingStatus.COMPLETED);
+            bookingRepository.save(booking);
+
+            log.info("Booking completed (no extra payment needed) - Booking ID: {}", booking.getId());
+
+            return FinalizeInspectionResponse.builder()
+                    .bookingId(booking.getId())
+                    .bookingStatus(BookingStatus.COMPLETED.name())
+                    .fineAmount(fineAmount)
+                    .message(fineAmount > 0 ? 
+                            "Tiền phạt " + fineAmount + " đã được trừ vào tiền cọc. Booking hoàn tất." :
+                            "Đã chốt kiểm tra. Không có phí bổ sung. Booking hoàn tất.")
+                    .build();
+        } else {
+            return FinalizeInspectionResponse.builder()
+                    .bookingId(booking.getId())
+                    .bookingStatus(booking.getStatus().name())
+                    .fineAmount(requiredPaymentAmount)
+                    .message("Đã chốt kiểm tra. Khách hàng cần đóng thêm " + requiredPaymentAmount + " sau khi trừ cọc.")
+                    .build();
+        }
+    }
 }
+
 
