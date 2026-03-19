@@ -1,8 +1,16 @@
 package fa.training.car_rental_management.services.impl;
 
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+
+import fa.training.car_rental_management.dto.request.ConfirmReturnRequest;
+import fa.training.car_rental_management.dto.response.BookingResponse;
+import fa.training.car_rental_management.dto.response.WaitingReturnResponse;
+import fa.training.car_rental_management.entities.*;
+import fa.training.car_rental_management.enums.*;
+import fa.training.car_rental_management.repository.*;
 import fa.training.car_rental_management.dto.response.BookingResponse;
 import fa.training.car_rental_management.entities.Availability;
+
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.entities.Payment;
 import fa.training.car_rental_management.entities.Vehicle;
@@ -19,9 +27,12 @@ import fa.training.car_rental_management.repository.UserRepository;
 import fa.training.car_rental_management.repository.VehicleRepository;
 import fa.training.car_rental_management.services.BookingService;
 import fa.training.car_rental_management.util.BookingValidator;
+import fa.training.car_rental_management.util.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +53,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private InspectionRepository inspectionRepository;
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private VehicleRepository vehicleRepository;
@@ -428,6 +444,107 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Override
+    public List<WaitingReturnResponse> getWaitingReturnConfirm(Integer ownerId) {
+        return bookingRepository.findWaitingReturnConfirm(ownerId);
+    }
+
+    @Transactional
+    public void confirmReturn(Integer bookingId, ConfirmReturnRequest request) {
+
+        // 1️⃣ tìm booking
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != BookingStatus.UNDER_INSPECTION) {
+            throw new RuntimeException("Booking chưa ở trạng thái kiểm tra xe");
+        }
+
+        // 2️⃣ tìm vehicle
+        Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        // 3️⃣ tạo inspection
+        Inspection inspection = new Inspection();
+        inspection.setBookingId(bookingId);
+        inspection.setInspectorId(vehicle.getOwnerId());
+        inspection.setType(InspectionType.RETURN);
+        inspection.setCarStatus(request.getCarStatus());
+        inspection.setComments(request.getComments());
+        inspection.setDate(LocalDateTime.now());
+
+        inspectionRepository.save(inspection);
+
+        // 4️⃣ lấy tiền cọc
+        Payment deposit = paymentRepository
+                .findByBookingIdAndTypeAndStatus(
+                        bookingId,
+                        PaymentType.SECURITY_DEPOSIT,
+                        PaymentStatus.COMPLETED
+                );
+
+        double depositAmount = deposit != null ? deposit.getAmount() : 0;
+        double fine = request.getFineAmount() != null ? request.getFineAmount() : 0;
+
+        // 🔥 validate
+        if (fine < 0) {
+            throw new RuntimeException("Fine không hợp lệ");
+        }
+
+        double extraPayment = 0;
+        double refundAmount = 0;
+
+        // 🔥 CASE LOGIC CHUẨN
+        if (fine > depositAmount) {
+            // khách phải trả thêm
+            extraPayment = fine - depositAmount;
+        } else {
+            // trừ vào tiền cọc
+            refundAmount = depositAmount - fine;
+        }
+
+        // =========================
+        // 🔴 CASE 1: khách trả thêm
+        // =========================
+        if (extraPayment > 0) {
+
+            Payment finePayment = new Payment();
+            finePayment.setBookingId(bookingId);
+            finePayment.setPayerId(booking.getCustomerId());
+            finePayment.setAmount(extraPayment);
+            finePayment.setType(PaymentType.FINE);
+            finePayment.setStatus(PaymentStatus.PENDING);
+
+            paymentRepository.save(finePayment);
+
+            // 🔥 chờ thanh toán
+            booking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        }
+
+        // =========================
+        // 🟢 CASE 2: hoàn tiền
+        // =========================
+        else {
+
+            if (refundAmount > 0) {
+
+                Payment refund = new Payment();
+                refund.setBookingId(bookingId);
+                refund.setPayerId(booking.getCustomerId());
+                refund.setAmount(refundAmount);
+                refund.setType(PaymentType.REFUND);
+                refund.setStatus(PaymentStatus.PENDING);
+
+                paymentRepository.save(refund);
+            }
+
+            // 🔥 hoàn tất luôn
+            booking.setStatus(BookingStatus.COMPLETED);
+        }
+
+        bookingRepository.save(booking);
+    }
+
 
     private void sendBookingSuccessEmails(Booking booking) {
         try {
@@ -481,6 +598,40 @@ public class BookingServiceImpl implements BookingService {
         } catch (Exception e) {
             log.error("Error sending booking success emails: {}", e.getMessage(), e);
         }
+    }
+
+
+    public List<BookingResponse> getMyBookings(String token) {
+
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        Integer userId = jwtService.extractId(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        List<Object[]> results = bookingRepository.findBookingDetailsByCustomer(userId);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return results.stream().map(r -> BookingResponse.builder()
+                .id(((Number) r[0]).intValue())
+                .vehicleId(((Number) r[1]).intValue())
+                .customerId(((Number) r[2]).intValue())
+                .status((String) r[3])
+                .startTime(((LocalDateTime) r[4]).format(formatter))
+                .endTime(((LocalDateTime) r[5]).format(formatter))
+
+                // 🔥 vehicle
+                .vehicleName(r[6] + " " + r[7])
+
+                // 🔥 tiền
+                .rentalFare(((Number) r[8]).doubleValue())
+                .deposit(((Number) r[9]).doubleValue())
+                .fine(((Number) r[10]).doubleValue())
+
+                .build()
+        ).toList();
     }
 }
 

@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class ReturnCarRequest {
 
-    private String comments;
+//    private String comments;
 
     private String carStatus;
 

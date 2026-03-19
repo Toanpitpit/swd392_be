@@ -242,5 +242,13 @@ public class BookingController {
         }
     }
 
+    @GetMapping("/my-bookings")
+    public ResponseEntity<List<BookingResponse>> getMyBookings(
+            @RequestHeader("Authorization") String authHeader) {
+
+        return ResponseEntity.ok(
+                bookingService.getMyBookings(authHeader)
+        );
+    }
 }
 
