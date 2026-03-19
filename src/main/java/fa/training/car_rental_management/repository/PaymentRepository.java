@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
@@ -19,5 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             PaymentType type,
             PaymentStatus status
     );
+    Optional<Payment> findByBookingIdAndType(Integer bookingId, PaymentType type);
 }
 

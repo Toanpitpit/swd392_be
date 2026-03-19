@@ -29,26 +29,6 @@ public class InspectionController {
     private final InspectionService inspectionService;
     private final JwtService jwtService;
 
-    /**
-     * Create inspection (PICKUP or RETURN)
-     * POST /api/inspections
-     */
-    @PostMapping
-    public ResponseEntity<ApiResponse<Inspection>> createInspection(@RequestBody Inspection inspection) {
-        try {
-            log.info("Creating {} inspection for booking: {}", 
-                    inspection.getType(), inspection.getBookingId());
-            
-            Inspection createdInspection = inspectionService.createInspection(inspection);
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Inspection created successfully", createdInspection));
-        } catch (Exception e) {
-            log.error("Error creating inspection", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to create inspection: " + e.getMessage()));
-        }
-    }
 
     @PostMapping("/pickup")
     public ResponseEntity<ApiResponse<InspectionPickupResponse>> createPickupRecord(
@@ -71,12 +51,8 @@ public class InspectionController {
         }
     }
 
-    /**
-     * Get inspection by ID
-     * GET /api/inspections/{id}
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Inspection>> getInspectionById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching inspection with id: {}", id);
             
@@ -95,12 +71,9 @@ public class InspectionController {
         }
     }
 
-    /**
-     * Get inspections by booking ID
-     * GET /api/inspections/booking/{bookingId}
-     */
+
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable Integer bookingId) {
+    public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByBookingId(@PathVariable("bookingId") Integer bookingId) {
         try {
             log.info("Fetching inspections for booking: {}", bookingId);
             
@@ -115,10 +88,6 @@ public class InspectionController {
         }
     }
 
-    /**
-     * Get inspections by inspector ID
-     * GET /api/inspections/inspector/{inspectorId}
-     */
     @GetMapping("/inspector/{inspectorId}")
     public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByInspectorId(@PathVariable Integer inspectorId) {
         try {
@@ -135,10 +104,6 @@ public class InspectionController {
         }
     }
 
-    /**
-     * Get inspections by type
-     * GET /api/inspections/type/{type}
-     */
     @GetMapping("/type/{type}")
     public ResponseEntity<ApiResponse<List<Inspection>>> getInspectionsByType(@PathVariable InspectionType type) {
         try {
@@ -172,94 +137,6 @@ public class InspectionController {
             log.error("Error fetching inspections", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Error fetching inspections"));
-        }
-    }
-
-    /**
-     * Create return inspection
-     * POST /api/inspections/return
-     */
-    @PostMapping("/return")
-    public ResponseEntity<ApiResponse<Inspection>> createReturnInspection(
-            @RequestParam Integer bookingId,
-            @RequestParam Integer inspectorId,
-            @RequestParam CarStatus carStatus,
-            @RequestParam(required = false) String comments) {
-        try {
-            log.info("Creating return inspection for booking: {}", bookingId);
-            
-            Inspection inspection = Inspection.builder()
-                    .bookingId(bookingId)
-                    .inspectorId(inspectorId)
-                    .type(InspectionType.RETURN)
-                    .carStatus(carStatus)
-                    .comments(comments)
-                    .date(LocalDateTime.now())
-                    .build();
-            
-            Inspection createdInspection = inspectionService.createInspection(inspection);
-            
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Return inspection created successfully", createdInspection));
-        } catch (Exception e) {
-            log.error("Error creating return inspection", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to create return inspection: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Update inspection
-     * PUT /api/inspections/{id}
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Inspection>> updateInspection(
-            @PathVariable Integer id,
-            @RequestBody Inspection inspection) {
-        try {
-            log.info("Updating inspection with id: {}", id);
-            
-            Optional<Inspection> existingInspection = inspectionService.getInspectionById(id);
-            
-            if (existingInspection.isPresent()) {
-                inspection.setId(id);
-                Inspection updatedInspection = inspectionService.updateInspection(inspection);
-                
-                return ResponseEntity.ok(ApiResponse.success(
-                        "Inspection updated successfully", updatedInspection));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Inspection not found with id: " + id));
-            }
-        } catch (Exception e) {
-            log.error("Error updating inspection", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to update inspection: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Delete inspection
-     * DELETE /api/inspections/{id}
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteInspection(@PathVariable Integer id) {
-        try {
-            log.info("Deleting inspection with id: {}", id);
-            
-            Optional<Inspection> existingInspection = inspectionService.getInspectionById(id);
-            
-            if (existingInspection.isPresent()) {
-                inspectionService.deleteInspection(id);
-                return ResponseEntity.ok(ApiResponse.success("Inspection deleted successfully", null));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Inspection not found with id: " + id));
-            }
-        } catch (Exception e) {
-            log.error("Error deleting inspection", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("Failed to delete inspection: " + e.getMessage()));
         }
     }
 }

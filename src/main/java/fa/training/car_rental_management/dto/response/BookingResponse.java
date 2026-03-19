@@ -12,11 +12,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class BookingResponse {
+
     private Integer id;
     private Integer vehicleId;
     private Integer customerId;
+
+    private String vehicleName;   // 🔥 thêm
     private String status;
+
     private String startTime;
     private String endTime;
-}
 
+    private Double rentalFare;    // 🔥 tiền thuê
+    private Double deposit;       // 🔥 tiền cọc
+    private Double fine;          // 🔥 phí phạt
+}

@@ -1,2 +1,0 @@
-org.springframework.boot.env.EnvironmentPostProcessor=fa.training.car_rental_management.config.EnvConfig
-

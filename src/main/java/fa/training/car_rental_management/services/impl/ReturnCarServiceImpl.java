@@ -61,7 +61,7 @@ public class ReturnCarServiceImpl implements ReturnCarService {
         inspection.setInspectorId(ownerId);
         inspection.setCarStatus(CarStatus.GOOD);
         inspection.setType(InspectionType.RETURN);
-        inspection.setComments(request.getComments());
+//        inspection.setComments(request.getComments());
         inspection.setDate(LocalDateTime.now());
 
         inspectionRepository.save(inspection);

@@ -79,12 +79,11 @@ public class VehicleServiceImpl implements VehicleService {
 
     private VehicleResponseDTO mapToVehicleResponseDTO(Vehicle vehicle) {
         VehicleResponseDTO dto = new VehicleResponseDTO();
-
         BeanUtils.copyProperties(vehicle, dto);
-        UsersResponseDTO userResponse = new UsersResponseDTO();
-        BeanUtils.copyProperties(vehicle.getOwner(), userResponse);
-        dto.setOwner(userResponse);
+        
         if (vehicle.getOwner() != null) {
+            UsersResponseDTO userResponse = new UsersResponseDTO();
+            BeanUtils.copyProperties(vehicle.getOwner(), userResponse);
             dto.setOwner(userResponse);
         }
         return dto;
@@ -122,7 +121,7 @@ public class VehicleServiceImpl implements VehicleService {
             String model, String city, VehicleStatus status ,Pageable pageable,
             LocalDateTime startDate, LocalDateTime endDate) {
 
-        log.info("Customer Search - Finding available vehicles excluding userId: {}");
+        log.info("Customer Search - Finding available vehicles");
 
         Specification<Vehicle> spec = Specification.where((root, query, cb) ->
                 cb.equal(root.get("status"), VehicleStatus.ACTIVE));
@@ -144,9 +143,10 @@ public class VehicleServiceImpl implements VehicleService {
             spec = spec.and(VehicleSpecifications.hasModel(model));
         }
 
+
         return vehicleRepository.findAll(spec, pageable).map(this::mapToVehicleResponseDTO);
     }
-    }
+}
 
 
 

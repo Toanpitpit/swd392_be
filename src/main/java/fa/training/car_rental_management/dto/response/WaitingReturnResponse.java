@@ -13,5 +13,6 @@ public class WaitingReturnResponse {
     private String licensePlate;
     private String vehicleName;
     private LocalDateTime endTime;
+    private Double deposit; // thêm dòng này
 
 }

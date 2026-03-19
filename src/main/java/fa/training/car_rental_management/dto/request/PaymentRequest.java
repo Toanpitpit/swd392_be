@@ -1,5 +1,6 @@
 package fa.training.car_rental_management.dto.request;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,8 +16,7 @@ import java.math.BigDecimal;
 @Builder
 public class PaymentRequest {
     private Integer bookingId;
-    private Integer payerId;
-    private BigDecimal amount;
     private String paymentType;
+    private String bankCode;
 }
 

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Payment Success</title>
+    <style>
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding: 20px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td align="center" style="padding: 20px 0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #dcdde1; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+
+                <tr>
+                    <td align="center" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); padding: 50px 20px;">
+                        <div style="background-color: rgba(255,255,255,0.2); width: 80px; height: 80px; border-radius: 50%; line-height: 85px; margin-bottom: 20px;">
+                            <span style="font-size: 40px; color: #ffffff;">✔</span>
+                        </div>
+                        <h1 style="color: #ffffff; margin: 0; font-size: 26px; text-transform: uppercase; letter-spacing: 2px;">Payment Successful</h1>
+                        <p style="color: #e0fcf5; margin: 10px 0 0 0; font-size: 15px;">Mã đặt xe: #<span th:text="${bookingId}">12345</span></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="mobile-padding" style="padding: 40px 35px;">
+                        <h2 style="color: #2d3436; margin: 0 0 15px 0; font-size: 22px;">Chào <span th:text="${receiverName}" style="color: #00b894;">Bạn</span>,</h2>
+                        <p style="color: #636e72; line-height: 1.6; margin: 0 0 30px 0; font-size: 16px;" th:text="${message}">
+                            Thanh toán của bạn đã được hệ thống xác nhận thành công. Xe của bạn đã được giữ chỗ chính thức.
+                        </p>
+
+                        <div style="background-color: #f9f9f9; border-radius: 12px; padding: 25px; border: 1px solid #f1f2f6;">
+                            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: #b2bec3; text-transform: uppercase; letter-spacing: 1px;">Chi tiết thuê xe</h3>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="padding: 8px 0; color: #636e72;">Phương tiện:</td>
+                                    <td align="right" style="padding: 8px 0; font-weight: 600; color: #2d3436;" th:text="${vehicleName}">VinFast Lux A2.0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #636e72;">Thời gian nhận:</td>
+                                    <td align="right" style="padding: 8px 0; font-weight: 600; color: #2d3436;" th:text="${startTime}">10:00 - 16/03/2026</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #636e72;">Thời gian trả:</td>
+                                    <td align="right" style="padding: 8px 0; font-weight: 600; color: #2d3436;" th:text="${endTime}">10:00 - 18/03/2026</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px 0 8px 0; border-top: 1px solid #eeeeee; color: #636e72;">Tổng tiền đã trả:</td>
+                                    <td align="right" style="padding: 15px 0 8px 0; border-top: 1px solid #eeeeee; font-size: 20px; font-weight: 700; color: #00b894;">
+                                        <span th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')}">2,000,000</span> VNĐ
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 40px;">
+                            <tr>
+                                <td align="center">
+                                    <a th:href="${actionUrl}" style="background-color: #2d3436; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+                                        Xem lịch trình chuyến đi
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="text-align: center; margin-top: 30px; color: #b2bec3; font-size: 14px;">
+                            Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ hotline 1900-xxxx.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="background-color: #f1f2f6; padding: 30px; text-align: center; border-top: 1px solid #e1e4e8;">
+                        <p style="margin: 0; color: #95a5a6; font-size: 12px;">Cảm ơn bạn đã tin dùng <strong>FitHub Car Rental</strong>.</p>
+                        <p style="margin: 10px 0 0 0; color: #95a5a6; font-size: 12px;">© 2026 FitHub Car Rental Management System.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

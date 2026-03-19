@@ -35,7 +35,7 @@ public class VehicleDocumentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehicleDocument>> getVehicleDocumentById(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<VehicleDocument>> getVehicleDocumentById(@PathVariable("id") Integer id) {
         try {
             Optional<VehicleDocument> document = vehicleDocumentService.getVehicleDocumentById(id);
             return document.map(d -> ResponseEntity.ok(ApiResponse.success("Vehicle document retrieved", d)))
@@ -49,7 +49,7 @@ public class VehicleDocumentController {
     }
 
     @GetMapping("/vehicle/{vehicleId}")
-    public ResponseEntity<ApiResponse<List<VehicleDocument>>> getDocumentsByVehicleId(@PathVariable Integer vehicleId) {
+    public ResponseEntity<ApiResponse<List<VehicleDocument>>> getDocumentsByVehicleId(@PathVariable("vehicleId") Integer vehicleId) {
         try {
             List<VehicleDocument> documents = vehicleDocumentService.getDocumentsByVehicleId(vehicleId);
             return ResponseEntity.ok(ApiResponse.success("Vehicle documents retrieved", documents));
@@ -61,7 +61,7 @@ public class VehicleDocumentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<VehicleDocument>> updateVehicleDocument(@PathVariable Integer id, @RequestBody VehicleDocument vehicleDocument) {
+    public ResponseEntity<ApiResponse<VehicleDocument>> updateVehicleDocument(@PathVariable("id") Integer id, @RequestBody VehicleDocument vehicleDocument) {
         try {
             vehicleDocument.setId(id);
             VehicleDocument updatedDocument = vehicleDocumentService.updateVehicleDocument(vehicleDocument);
@@ -74,7 +74,7 @@ public class VehicleDocumentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteVehicleDocument(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteVehicleDocument(@PathVariable("id") Integer id) {
         try {
             vehicleDocumentService.deleteVehicleDocument(id);
             return ResponseEntity.ok(ApiResponse.success("Vehicle document deleted successfully", null));
