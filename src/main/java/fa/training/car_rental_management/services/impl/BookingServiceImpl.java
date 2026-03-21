@@ -331,6 +331,17 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(BookingStatus.COMPLETED);
             bookingRepository.save(booking);
 
+            List<Availability> availabilities = availabilityRepository.findAllByVehicleIdAndStartDateAndEndDate(
+                    booking.getVehicleId(),
+                    booking.getStartTime(),
+                    booking.getEndTime()
+            );
+
+            if (!availabilities.isEmpty()) {
+                availabilityRepository.deleteAll(availabilities);
+                log.info("Deleted {} availability records for Booking ID: {}", availabilities.size(), bookingId);
+            }
+
             log.info("Booking completed - ID: {}", bookingId);
             String returnDateTime = LocalDateTime.now().format(DATE_FORMATTER);
 
@@ -507,7 +518,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Transactional
-    public void confirmReturn(Integer bookingId, ConfirmReturnRequest request) {
+    public void confirmReturn(Integer bookingId, ConfirmReturnRequest request, Integer ownerId) {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -519,7 +530,16 @@ public class BookingServiceImpl implements BookingService {
         Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        Inspection inspection = new Inspection();
+        if (!vehicle.getOwnerId().equals(ownerId)) {
+            throw new RuntimeException("Bạn không phải chủ xe của booking này");
+        }
+
+        List<Inspection> inspections = inspectionRepository.findByBookingId(bookingId);
+        Inspection inspection = inspections.stream()
+            .filter(i -> i.getType() == InspectionType.RETURN)
+            .findFirst()
+            .orElseGet(Inspection::new);
+
         inspection.setBookingId(bookingId);
         inspection.setInspectorId(vehicle.getOwnerId());
         inspection.setType(InspectionType.RETURN);

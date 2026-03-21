@@ -2,7 +2,9 @@ package fa.training.car_rental_management.controllers;
 
 import fa.training.car_rental_management.dto.ApiResponse;
 import fa.training.car_rental_management.dto.request.BookingRequestDTO;
+import fa.training.car_rental_management.dto.request.ConfirmReturnRequest;
 import fa.training.car_rental_management.dto.response.BookingResponse;
+import fa.training.car_rental_management.dto.response.WaitingReturnResponse;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.enums.BookingStatus;
 import fa.training.car_rental_management.services.impl.BookingServiceImpl;
@@ -37,11 +39,11 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<ApiResponse<Booking>> createBooking(@RequestBody BookingRequestDTO booking) {
         try {
-            log.info("Creating new booking for vehicle: {} by customer: {}", 
+            log.info("Creating new booking for vehicle: {} by customer: {}",
                     booking.getVehicleId(), booking.getCustomerId());
 
             Booking createdBooking = bookingService.createBooking(booking);
-            
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Booking created successfully", createdBooking));
         } catch (Exception e) {
@@ -59,9 +61,9 @@ public class BookingController {
     public ResponseEntity<ApiResponse<BookingResponse>> getBookingById(@PathVariable("id") Integer id) {
         try {
             log.info("Fetching booking with id: {}", id);
-            
+
             Optional<Booking> booking = bookingService.getBookingById(id);
-            
+
             if (booking.isPresent()) {
                 Booking b = booking.get();
                 BookingResponse response = BookingResponse.builder()
@@ -92,7 +94,7 @@ public class BookingController {
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByCustomerId(@PathVariable("customerId") Integer customerId) {
         try {
             log.info("Fetching bookings for customer: {}", customerId);
-            
+
             List<Booking> bookings = bookingService.getBookingsByCustomerId(customerId);
             List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
                     .id(b.getId())
@@ -120,7 +122,7 @@ public class BookingController {
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByStatus(@PathVariable("status") BookingStatus status) {
         try {
             log.info("Fetching bookings with status: {}", status);
-            
+
             List<Booking> bookings = bookingService.getBookingsByStatus(status);
             List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
                     .id(b.getId())
@@ -149,7 +151,7 @@ public class BookingController {
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getAllBookings() {
         try {
             log.info("Fetching all bookings");
-            
+
             List<Booking> bookings = bookingService.getAllBookings();
             List<BookingResponse> responses = bookings.stream().map(b -> BookingResponse.builder()
                     .id(b.getId())
@@ -177,14 +179,14 @@ public class BookingController {
             @RequestParam("status") BookingStatus status) {
         try {
             log.info("Updating booking status to: {} for booking id: {}", status, id);
-            
+
             Optional<Booking> existingBooking = bookingService.getBookingById(id);
-            
+
             if (existingBooking.isPresent()) {
                 Booking booking = existingBooking.get();
                 booking.setStatus(status);
                 Booking updatedBooking = bookingService.updateBooking(booking);
-                
+
                 BookingResponse response = BookingResponse.builder()
                         .id(updatedBooking.getId())
                         .vehicleId(updatedBooking.getVehicleId())
@@ -217,7 +219,7 @@ public class BookingController {
             log.info("Rejecting booking id: {} with reason: {}", id, reason);
             String token = authHeader.replace("Bearer ", "").trim();
             Optional<Integer> onwerId = jwtService.extractId(token);
-            BookingResponse booking =  bookingService.rejectBooking(id, reason, onwerId.get());
+            BookingResponse booking = bookingService.rejectBooking(id, reason, onwerId.get());
             return ApiResponse.success("successfully reject booking", booking);
         } catch (Exception e) {
             log.error("Error rejecting booking", e);
@@ -248,6 +250,34 @@ public class BookingController {
 
         return ResponseEntity.ok(
                 bookingService.getMyBookings(authHeader)
+        );
+    }
+
+    @GetMapping("/{ownerId}/waiting-return-confirm")
+    public ResponseEntity<ApiResponse<List<WaitingReturnResponse>>> getWaitingReturnConfirm(
+            @PathVariable Integer ownerId) {
+
+        List<WaitingReturnResponse> bookings = bookingService.getWaitingReturnConfirm(ownerId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Lấy danh sách đơn chờ xác nhận trả xe thành công", bookings)
+        );
+    }
+
+    @PreAuthorize("hasAuthority('CAR_OWNER')")
+    @PostMapping("/{bookingId}/confirm-return")
+    public ResponseEntity<ApiResponse<String>> confirmReturn(
+            @PathVariable Integer bookingId,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody ConfirmReturnRequest request) {
+
+        String token = authHeader.replace("Bearer ", "").trim();
+        Integer ownerId = jwtService.extractId(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token: ownerId not found"));
+
+        bookingService.confirmReturn(bookingId, request, ownerId);
+        return ResponseEntity.ok(
+                ApiResponse.success("Xác nhận trả xe thành công", null)
         );
     }
 }

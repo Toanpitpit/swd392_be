@@ -3,11 +3,13 @@ package fa.training.car_rental_management.services.impl;
 import fa.training.car_rental_management.config.VnpayConfig;
 import fa.training.car_rental_management.dto.request.PaymentRequest;
 import fa.training.car_rental_management.dto.response.PaymentVnpayResponse;
+import fa.training.car_rental_management.entities.Availability;
 import fa.training.car_rental_management.entities.Booking;
 import fa.training.car_rental_management.entities.Payment;
 import fa.training.car_rental_management.enums.PaymentStatus;
 import fa.training.car_rental_management.enums.PaymentType;
 import fa.training.car_rental_management.exception.ResourceNotFoundException;
+import fa.training.car_rental_management.repository.AvailabilityRepository;
 import fa.training.car_rental_management.repository.BookingRepository;
 import fa.training.car_rental_management.repository.PaymentRepository;
 import fa.training.car_rental_management.util.VnPayUtil;
@@ -28,6 +30,7 @@ public class PaymentVnpayService {
     private final VnpayConfig vnPayConfig;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
+    private final AvailabilityRepository availabilityRepository;
 
     public PaymentVnpayResponse createVnPayPayment(PaymentRequest request ,String ipAddress) {
 
@@ -65,8 +68,14 @@ public class PaymentVnpayService {
 //            }
 
 
-            Payment payment = paymentRepository.findByBookingIdAndType(booking.getId(), type)
-                    .orElseThrow(() -> new ResourceNotFoundException("Payment record not found for type: " + type + " and booking: " + booking.getId()));
+                Payment payment = paymentRepository.findByBookingIdAndTypeAndStatus(
+                    booking.getId(),
+                    type,
+                    PaymentStatus.PENDING
+                );
+                if (payment == null) {
+                throw new ResourceNotFoundException("Pending payment record not found for type: " + type + " and booking: " + booking.getId());
+                }
 
             amount = (long) (payment.getAmount() * 100);
         }
@@ -163,17 +172,37 @@ public class PaymentVnpayService {
                 }
             } else {
                 PaymentType type = PaymentType.valueOf(typeStr.toUpperCase());
-                Payment payment = paymentRepository.findByBookingIdAndType(bookingId, type)
-                        .orElseThrow(() -> new ResourceNotFoundException("Payment not found for type: " + type + " and booking: " + bookingId));
+                Payment payment = paymentRepository.findByBookingIdAndTypeAndStatus(
+                    bookingId,
+                    type,
+                    PaymentStatus.PENDING
+                );
+                if (payment == null) {
+                    throw new ResourceNotFoundException("Pending payment not found for type: " + type + " and booking: " + bookingId);
+                }
                 payment.setStatus(PaymentStatus.COMPLETED);
                 paymentRepository.save(payment);
 
                 // Finalize booking if this is a post-inspection payment
                 Booking booking = bookingRepository.findById(bookingId)
                         .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
-                if (booking.getStatus() == fa.training.car_rental_management.enums.BookingStatus.UNDER_INSPECTION) {
+                if (booking.getStatus() == fa.training.car_rental_management.enums.BookingStatus.UNDER_INSPECTION
+                        || booking.getStatus() == fa.training.car_rental_management.enums.BookingStatus.AWAITING_PAYMENT) {
                     booking.setStatus(fa.training.car_rental_management.enums.BookingStatus.COMPLETED);
                     bookingRepository.save(booking);
+
+                    if (type == PaymentType.FINE) {
+                        List<Availability> availabilities = availabilityRepository
+                                .findAllByVehicleIdAndStartDateAndEndDate(
+                                        booking.getVehicleId(),
+                                        booking.getStartTime(),
+                                        booking.getEndTime()
+                                );
+
+                        if (!availabilities.isEmpty()) {
+                            availabilityRepository.deleteAll(availabilities);
+                        }
+                    }
                 }
             }
 
@@ -192,8 +221,14 @@ public class PaymentVnpayService {
                 }
             } else {
                 PaymentType type = PaymentType.valueOf(typeStr.toUpperCase());
-                Payment payment = paymentRepository.findByBookingIdAndType(bookingId, type)
-                        .orElseThrow(() -> new ResourceNotFoundException("Payment not found for type: " + type + " and booking: " + bookingId));
+                Payment payment = paymentRepository.findByBookingIdAndTypeAndStatus(
+                    bookingId,
+                    type,
+                    PaymentStatus.PENDING
+                );
+                if (payment == null) {
+                    throw new ResourceNotFoundException("Pending payment not found for type: " + type + " and booking: " + bookingId);
+                }
                 payment.setStatus(PaymentStatus.FAILED);
                 paymentRepository.save(payment);
             }

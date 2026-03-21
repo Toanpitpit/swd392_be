@@ -239,9 +239,11 @@ public class BookingValidator {
         List<Booking> existingBookings = bookingRepository.findByVehicleId(vehicleId);
         
         for (Booking booking : existingBookings) {
-            // Skip cancelled/rejected bookings
+            // Skip terminal bookings that should not block future rentals
             if (booking.getStatus() == BookingStatus.CANCELLED || 
-                booking.getStatus() == BookingStatus.REJECTED) {
+                booking.getStatus() == BookingStatus.REJECTED ||
+                booking.getStatus() == BookingStatus.COMPLETED ||
+                booking.getStatus() == BookingStatus.EXPIRED) {
                 continue;
             }
             
