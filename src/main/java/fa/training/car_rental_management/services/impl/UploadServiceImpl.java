@@ -35,7 +35,6 @@ public class UploadServiceImpl implements UploadService {
     @Value("${aws.s3.max-file-size:52428800}")
     private long maxFileSize;
 
-
     @Value("${aws.s3.allowed-file-types:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,mp4}")
 
     private String allowedFileTypes;
@@ -197,11 +196,6 @@ public class UploadServiceImpl implements UploadService {
             log.error("Error uploading file to S3", e);
             throw new IOException("Failed to upload file to S3: " + e.getMessage(), e);
         }
-    }
-
-    
-    private String buildS3Url(String bucket, String fileKey) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, fileKey);
     }
 
     private void validateFile(MultipartFile file) throws IOException {

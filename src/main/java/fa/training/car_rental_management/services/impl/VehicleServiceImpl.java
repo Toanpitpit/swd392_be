@@ -3,7 +3,6 @@ package fa.training.car_rental_management.services.impl;
 import fa.training.car_rental_management.dto.response.UsersResponseDTO;
 import fa.training.car_rental_management.dto.response.VehicleResponseDTO;
 import fa.training.car_rental_management.entities.Vehicle;
-import fa.training.car_rental_management.enums.FuelType;
 import fa.training.car_rental_management.enums.VehicleStatus;
 import fa.training.car_rental_management.repository.AddressRepository;
 import fa.training.car_rental_management.repository.VehicleRepository;
@@ -17,9 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -38,23 +35,23 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with id: " + id));
         return mapToVehicleResponseDTO(vehicle);
     }
-    @Override
-    public List<Vehicle> getVehiclesByOwnerId(Integer ownerId) {
-        log.info("Fetching vehicles for owner: {}", ownerId);
-        return vehicleRepository.findByOwnerId(ownerId);
-    }
-
-    @Override
-    public List<Vehicle> getVehiclesByStatus(VehicleStatus status) {
-        log.info("Fetching vehicles with status: {}", status);
-        return vehicleRepository.findByStatus(status);
-    }
-
-    @Override
-    public Page<VehicleResponseDTO> getAllVehicles(Pageable pageable) {
-        Page<Vehicle> lstVe =  vehicleRepository.findAll(pageable);
-        return lstVe.map(this::mapToVehicleResponseDTO);
-    }
+//    @Override
+//    public List<Vehicle> getVehiclesByOwnerId(Integer ownerId) {
+//        log.info("Fetching vehicles for owner: {}", ownerId);
+//        return vehicleRepository.findByOwnerId(ownerId);
+//    }
+//
+//    @Override
+//    public List<Vehicle> getVehiclesByStatus(VehicleStatus status) {
+//        log.info("Fetching vehicles with status: {}", status);
+//        return vehicleRepository.findByStatus(status);
+//    }
+//
+//    @Override
+//    public Page<VehicleResponseDTO> getAllVehicles(Pageable pageable) {
+//        Page<Vehicle> lstVe =  vehicleRepository.findAll(pageable);
+//        return lstVe.map(this::mapToVehicleResponseDTO);
+//    }
 
 
     @Override

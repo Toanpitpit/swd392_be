@@ -42,11 +42,11 @@ public class InspectionServiceImpl implements InspectionService {
     private final InspectionPhotoRepository inspectionPhotoRepository;
     private final PaymentRepository paymentRepository;
 
-    @Override
-    public Inspection createInspection(Inspection inspection) {
-        log.info("Creating inspection for booking: {}", inspection.getBookingId());
-        return inspectionRecordRepository.save(inspection);
-    }
+//    @Override
+//    public Inspection createInspection(Inspection inspection) {
+//        log.info("Creating inspection for booking: {}", inspection.getBookingId());
+//        return inspectionRecordRepository.save(inspection);
+//    }
 
     @Override
     public Optional<Inspection> getInspectionById(Integer id) {
@@ -78,11 +78,11 @@ public class InspectionServiceImpl implements InspectionService {
         return inspectionRecordRepository.findAll();
     }
 
-    @Override
-    public Inspection updateInspection(Inspection inspection) {
-        log.info("Updating inspection with id: {}", inspection.getId());
-        return inspectionRecordRepository.save(inspection);
-    }
+//    @Override
+//    public Inspection updateInspection(Inspection inspection) {
+//        log.info("Updating inspection with id: {}", inspection.getId());
+//        return inspectionRecordRepository.save(inspection);
+//    }
 
     @Override
     public void deleteInspection(Integer id) {
@@ -167,43 +167,67 @@ public class InspectionServiceImpl implements InspectionService {
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Return inspection record not found for booking: " + booking.getId()));
 
-        returnInspection.setCarStatus(CarStatus.valueOf(request.getCarStatus()));
         returnInspection.setComments(request.getComments());
         returnInspection.setDate(LocalDateTime.now());
         inspectionRecordRepository.save(returnInspection);
 
         Double fineAmount = request.getFineAmount() != null ? request.getFineAmount() : 0.0;
+        Double requiredPaymentAmount = 0.0;
 
         if (fineAmount > 0) {
-            // Create a FINE payment record for the customer to pay
-            Payment finePayment = new Payment();
-            finePayment.setBookingId(booking.getId());
-            finePayment.setPayerId(booking.getCustomerId());
-            finePayment.setType(PaymentType.FINE);
-            finePayment.setAmount(fineAmount);
-            finePayment.setStatus(PaymentStatus.PENDING);
-            paymentRepository.save(finePayment);
+            // Find security deposit to subtract from the fine
+            Optional<Payment> depositOpt = paymentRepository.findByBookingIdAndType(booking.getId(), PaymentType.SECURITY_DEPOSIT);
+            Double depositAmount = depositOpt.map(Payment::getAmount).orElse(0.0);
+            
+            requiredPaymentAmount = fineAmount - depositAmount;
 
-            log.info("FINE payment created - Booking ID: {}, Amount: {}", booking.getId(), fineAmount);
+            if (requiredPaymentAmount > 0) {
+                // Check if a PENDING FINE payment already exists
+                List<Payment> existingPayments = paymentRepository.findByBookingId(booking.getId());
+                Optional<Payment> existingPendingFine = existingPayments.stream()
+                        .filter(p -> p.getType() == PaymentType.FINE && p.getStatus() == PaymentStatus.PENDING)
+                        .findFirst();
 
-            return FinalizeInspectionResponse.builder()
-                    .bookingId(booking.getId())
-                    .bookingStatus(booking.getStatus().name())
-                    .fineAmount(fineAmount)
-                    .message("Inspection finalized. Customer needs to pay fine of " + fineAmount + " before booking is completed.")
-                    .build();
-        } else {
-            // No fines — complete the booking immediately
+                if (existingPendingFine.isPresent()) {
+                    Payment p = existingPendingFine.get();
+                    p.setAmount(requiredPaymentAmount);
+                    paymentRepository.save(p);
+                    log.info("Updated existing PENDING FINE payment - Booking ID: {}, New Amount: {}", booking.getId(), requiredPaymentAmount);
+                } else {
+                    // Create a new FINE payment record for the remaining amount
+                    Payment finePayment = new Payment();
+                    finePayment.setBookingId(booking.getId());
+                    finePayment.setPayerId(booking.getCustomerId());
+                    finePayment.setType(PaymentType.FINE);
+                    finePayment.setAmount(requiredPaymentAmount);
+                    finePayment.setStatus(PaymentStatus.PENDING);
+                    paymentRepository.save(finePayment);
+                    log.info("FINE payment created - Booking ID: {}, Remaining Amount: {}", booking.getId(), requiredPaymentAmount);
+                }
+            }
+        }
+
+        if (requiredPaymentAmount <= 0) {
+            // No extra fines or deposit fully covers the fine — complete the booking immediately
             booking.setStatus(BookingStatus.COMPLETED);
             bookingRepository.save(booking);
 
-            log.info("Booking completed (no fines) - Booking ID: {}", booking.getId());
+            log.info("Booking completed (no extra payment needed) - Booking ID: {}", booking.getId());
 
             return FinalizeInspectionResponse.builder()
                     .bookingId(booking.getId())
                     .bookingStatus(BookingStatus.COMPLETED.name())
-                    .fineAmount(0.0)
-                    .message("Inspection finalized. No additional charges. Booking is completed.")
+                    .fineAmount(fineAmount)
+                    .message(fineAmount > 0 ? 
+                            "Tiền phạt " + fineAmount + " đã được trừ vào tiền cọc. Booking hoàn tất." :
+                            "Đã chốt kiểm tra. Không có phí bổ sung. Booking hoàn tất.")
+                    .build();
+        } else {
+            return FinalizeInspectionResponse.builder()
+                    .bookingId(booking.getId())
+                    .bookingStatus(booking.getStatus().name())
+                    .fineAmount(requiredPaymentAmount)
+                    .message("Đã chốt kiểm tra. Khách hàng cần đóng thêm " + requiredPaymentAmount + " sau khi trừ cọc.")
                     .build();
         }
     }

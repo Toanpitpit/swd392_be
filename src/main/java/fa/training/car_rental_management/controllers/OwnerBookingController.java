@@ -33,7 +33,6 @@ public class OwnerBookingController {
             @RequestBody ConfirmReturnRequest request) {
 
         bookingService.confirmReturn(bookingId, request);
-
         return ResponseEntity.ok(
                 ApiResponse.success("Xác nhận trả xe thành công", null)
         );
