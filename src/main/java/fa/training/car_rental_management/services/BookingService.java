@@ -22,6 +22,6 @@ public interface BookingService {
     List<Booking> getAllBookings();
     Booking updateBooking(Booking booking);
     List<WaitingReturnResponse> getWaitingReturnConfirm(Integer ownerId);
-    void confirmReturn(Integer bookingId, ConfirmReturnRequest request);
+    void confirmReturn(Integer bookingId, ConfirmReturnRequest request, Integer ownerId);
     List<BookingResponse> getMyBookings(String token);
 }
