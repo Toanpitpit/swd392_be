@@ -74,6 +74,7 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private BookingValidator bookingValidator;
 
+
 //    @Value("${app.frontend.url}")
     private String frontendUrl="http://localhost:3000" ;
 
@@ -391,7 +392,85 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    public void sendReturnRequestEmailToOwner(Booking booking) {
+        try {
 
+            Vehicle vehicle = booking.getVehicle();
+            Users owner = vehicle.getOwner();
+            Users customer = booking.getCustomer();
+
+            Map<String, Object> vars = new HashMap<>();
+
+            // Variables for template
+            vars.put("ownerName", owner.getName());
+            vars.put("customerName", customer.getName());
+            vars.put("bookingId", booking.getId());
+            vars.put("vehicleName", vehicle.getMake() + " " + vehicle.getModel());
+
+            vars.put("startTime", booking.getStartTime().format(DATE_FORMATTER));
+            vars.put("endTime", booking.getEndTime().format(DATE_FORMATTER));
+
+            vars.put("actionUrl", frontendUrl + "/owner/bookings/" + booking.getId());
+
+            notificationEmailService.sendEmailWithTemplate(
+                    owner,
+                    "Vehicle Return Request - Booking #" + booking.getId(),
+                    "return_vehicle",
+                    vars
+            );
+
+            log.info(
+                    "Return request email sent to owner: {} for Booking ID: {}",
+                    owner.getEmail(),
+                    booking.getId()
+            );
+
+        } catch (Exception e) {
+            log.error("Error sending return request email: {}", e.getMessage(), e);
+        }
+    }
+    public void sendReturnResultEmailToCustomer(
+            Booking booking,
+            double depositAmount,
+            double fine,
+            double refundAmount,
+            double extraPayment
+    ) {
+        try {
+
+            Vehicle vehicle = booking.getVehicle();
+            Users customer = booking.getCustomer();
+
+            Map<String, Object> vars = new HashMap<>();
+
+            vars.put("customerName", customer.getName());
+            vars.put("bookingId", booking.getId());
+            vars.put("vehicleName", vehicle.getMake() + " " + vehicle.getModel());
+
+            vars.put("depositAmount", depositAmount);
+            vars.put("fineAmount", fine);
+            vars.put("refundAmount", refundAmount);
+            vars.put("extraPayment", extraPayment);
+
+            vars.put("actionUrl", frontendUrl + "/bookings/" + booking.getId());
+
+            notificationEmailService.sendEmailWithTemplate(
+                    customer,
+                    "Vehicle Return Result - Booking #" + booking.getId(),
+                    "vehicle-return-result",
+                    vars
+            );
+
+            log.info(
+                    "Return result email sent to customer: {} for Booking ID: {}",
+                    customer.getEmail(),
+                    booking.getId()
+            );
+
+        } catch (Exception e) {
+            log.error("Error sending return result email: {}", e.getMessage(), e);
+        }
+    }
     private void sendNewBookingRequestEmailToOwner(
             Vehicle vehicle,
             Users customer,
@@ -452,7 +531,6 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void confirmReturn(Integer bookingId, ConfirmReturnRequest request) {
 
-        // 1️⃣ tìm booking
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
@@ -460,11 +538,9 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Booking chưa ở trạng thái kiểm tra xe");
         }
 
-        // 2️⃣ tìm vehicle
         Vehicle vehicle = vehicleRepository.findById(booking.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        // 3️⃣ tạo inspection
         Inspection inspection = new Inspection();
         inspection.setBookingId(bookingId);
         inspection.setInspectorId(vehicle.getOwnerId());
@@ -474,8 +550,6 @@ public class BookingServiceImpl implements BookingService {
         inspection.setDate(LocalDateTime.now());
 
         inspectionRepository.save(inspection);
-
-        // 4️⃣ lấy tiền cọc
         Payment deposit = paymentRepository
                 .findByBookingIdAndTypeAndStatus(
                         bookingId,
@@ -486,7 +560,6 @@ public class BookingServiceImpl implements BookingService {
         double depositAmount = deposit != null ? deposit.getAmount() : 0;
         double fine = request.getFineAmount() != null ? request.getFineAmount() : 0;
 
-        // 🔥 validate
         if (fine < 0) {
             throw new RuntimeException("Fine không hợp lệ");
         }
@@ -494,18 +567,14 @@ public class BookingServiceImpl implements BookingService {
         double extraPayment = 0;
         double refundAmount = 0;
 
-        // 🔥 CASE LOGIC CHUẨN
         if (fine > depositAmount) {
-            // khách phải trả thêm
             extraPayment = fine - depositAmount;
         } else {
-            // trừ vào tiền cọc
             refundAmount = depositAmount - fine;
         }
 
-        // =========================
-        // 🔴 CASE 1: khách trả thêm
-        // =========================
+        // khách trả thêm
+
         if (extraPayment > 0) {
 
             Payment finePayment = new Payment();
@@ -517,13 +586,12 @@ public class BookingServiceImpl implements BookingService {
 
             paymentRepository.save(finePayment);
 
-            // 🔥 chờ thanh toán
             booking.setStatus(BookingStatus.AWAITING_PAYMENT);
         }
 
-        // =========================
+
         // 🟢 CASE 2: hoàn tiền
-        // =========================
+
         else {
 
             if (refundAmount > 0) {
@@ -538,13 +606,33 @@ public class BookingServiceImpl implements BookingService {
                 paymentRepository.save(refund);
             }
 
-            // 🔥 hoàn tất luôn
             booking.setStatus(BookingStatus.COMPLETED);
         }
 
         bookingRepository.save(booking);
-    }
+        sendReturnResultEmailToCustomer(
+                booking,
+                depositAmount,
+                fine,
+                refundAmount,
+                extraPayment
+        );
 
+        if (booking.getStatus() == BookingStatus.COMPLETED) {
+
+            List<Availability> availabilities = availabilityRepository
+                    .findAllByVehicleIdAndStartDateAndEndDate(
+                            booking.getVehicleId(),
+                            booking.getStartTime(),
+                            booking.getEndTime()
+                    );
+
+            if (!availabilities.isEmpty()) {
+                availabilityRepository.deleteAll(availabilities);
+                log.info("Deleted {} availability records for Booking ID: {}", availabilities.size(), bookingId);
+            }
+        }
+    }
 
     private void sendBookingSuccessEmails(Booking booking) {
         try {

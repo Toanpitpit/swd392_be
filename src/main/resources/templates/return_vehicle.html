@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Return Request</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+<h2>FitHub Car Rental</h2>
+
+<p>Hello
+
+<p>
+    Customer <b th:text="${customerName}">Customer</b> has submitted a request to return the rented vehicle.
+</p>
+
+<h3>Booking Details</h3>
+
+<ul>
+    <li>
+        <b>Booking ID:</b>
+        <span th:text="${bookingId}">1</span>
+    </li>
+
+    <li>
+        <b>Vehicle:</b>
+        <span th:text="${vehicleName}">Vehicle Name</span>
+    </li>
+
+    <li>
+        <b>Rental Period:</b>
+        <span th:text="${startTime}">Start</span>
+        →
+        <span th:text="${endTime}">End</span>
+    </li>
+</ul>
+
+<p>
+    Please log in to the system to inspect the vehicle and confirm the return request.
+</p>
+
+
+
+<hr>
+
+<p style="font-size:12px;color:gray;">
+    This is an automated email from FitHub Car Rental System.
+</p>
+
+</body>
+</html>
