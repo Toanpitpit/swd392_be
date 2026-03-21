@@ -34,6 +34,7 @@ public class ReturnCarServiceImpl implements ReturnCarService {
     private final InspectionRepository inspectionRepository;
     private final InspectionPhotoRepository photoRepository;
     private final UploadService uploadService;
+    private final BookingServiceImpl bookingService;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -42,6 +43,7 @@ public class ReturnCarServiceImpl implements ReturnCarService {
     private String region;
 
     @Override
+
     public List<String> returnCar(Integer bookingId, ReturnCarRequest request) {
 
         Booking booking = bookingRepository.findById(bookingId)
@@ -51,8 +53,12 @@ public class ReturnCarServiceImpl implements ReturnCarService {
             throw new RuntimeException("Booking is not ACTIVE");
         }
 
+        // đổi trạng thái
         booking.setStatus(BookingStatus.UNDER_INSPECTION);
         bookingRepository.save(booking);
+
+        // 🔥 gửi email cho chủ xe
+        bookingService.sendReturnRequestEmailToOwner(booking);
 
         Integer ownerId = booking.getVehicle().getOwner().getId();
 
@@ -61,7 +67,6 @@ public class ReturnCarServiceImpl implements ReturnCarService {
         inspection.setInspectorId(ownerId);
         inspection.setCarStatus(CarStatus.GOOD);
         inspection.setType(InspectionType.RETURN);
-//        inspection.setComments(request.getComments());
         inspection.setDate(LocalDateTime.now());
 
         inspectionRepository.save(inspection);

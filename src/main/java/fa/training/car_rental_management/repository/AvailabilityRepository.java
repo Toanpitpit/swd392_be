@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface AvailabilityRepository extends JpaRepository<Availability, Integer> {
     List<Availability> findByVehicleId(Integer vehicleId);
     List<Availability> findAllByVehicleIdAndStartDateAndEndDate(Integer vehicleId, LocalDateTime startTime, LocalDateTime endTime);
+
 }

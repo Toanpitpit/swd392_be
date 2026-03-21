@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Return Result</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+<h2>FitHub Car Rental</h2>
+
+<p>Hello <b th:text="${customerName}">Customer</b>,</p>
+
+<p>Your vehicle return has been inspected by the car owner.</p>
+
+<h3>Return Details</h3>
+
+<ul>
+    <li>
+        <b>Booking ID:</b>
+        <span th:text="${bookingId}"></span>
+    </li>
+
+    <li>
+        <b>Vehicle:</b>
+        <span th:text="${vehicleName}"></span>
+    </li>
+
+    <li>
+        <b>Deposit Amount:</b>
+        <span th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+    </li>
+
+    <li th:if="${fineAmount > 0}">
+        <b>Damage / Fine:</b>
+        <span th:text="${#numbers.formatDecimal(fineAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+    </li>
+    <li th:if="${refundAmount > 0}">
+        <b>Refund Amount:</b>
+        <span th:text="${#numbers.formatDecimal(refundAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+    </li>
+
+    <li th:if="${extraPayment > 0}">
+        <b>Additional Payment Required:</b>
+        <span th:text="${#numbers.formatDecimal(extraPayment, 0, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+    </li>
+
+</ul>
+
+<p th:if="${refundAmount > 0}">
+    The remaining deposit will be refunded to your payment method.
+</p>
+
+<p th:if="${extraPayment > 0}">
+    Please complete the additional payment to finalize your booking.
+</p>
+
+<p>
+    <a th:href="${actionUrl}"
+       style="background-color:#007bff;color:white;padding:10px 15px;text-decoration:none;border-radius:5px;">
+        View Booking
+    </a>
+</p>
+
+<hr>
+
+<p style="font-size:12px;color:gray;">
+    This is an automated email from FitHub Car Rental System.
+</p>
+
+</body>
+</html>
